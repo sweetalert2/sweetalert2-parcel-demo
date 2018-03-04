@@ -1,0 +1,16 @@
+{
+  "name": "sweetalert2-parcel-demo",
+  "version": "1.0.0",
+  "description": "Demo of using SweetAlert2 with parcel application bundler",
+  "license": "MIT",
+  "dependencies": {
+    "sweetalert2": "^7.13.2"
+  },
+  "devDependencies": {
+    "node-sass": "^4.7.2",
+    "parcel-bundler": "^1.6.2"
+  },
+  "scripts": {
+    "build": "parcel build index.html --public-url ./"
+  }
+}
