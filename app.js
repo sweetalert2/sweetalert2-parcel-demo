@@ -1,5 +1,8 @@
-import swal from 'sweetalert2/dist/sweetalert2.js'
+import Swal from 'sweetalert2/src/sweetalert2.js'
 
 import './styles.scss'
 
-swal('Hello from parcel!')
+Swal.fire({
+  title: 'Hello from parcel!',
+  html: `SweetAlert2 version ${Swal.version}`
+})
