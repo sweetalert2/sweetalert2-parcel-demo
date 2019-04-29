@@ -4,6 +4,7 @@
   "description": "Demo of using SweetAlert2 with parcel application bundler",
   "license": "MIT",
   "dependencies": {
+    "@sweetalert2/themes": "^1.0.2",
     "sweetalert2": "^8.0.3"
   },
   "devDependencies": {
@@ -11,7 +12,7 @@
     "parcel-bundler": "^1.9.4"
   },
   "scripts": {
-    "start": "parcel watch app.js",
-    "build": "parcel build app.js"
+    "start": "parcel watch --no-source-maps app.js",
+    "build": "parcel build --no-source-maps app.js"
   }
 }

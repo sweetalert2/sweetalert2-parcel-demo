@@ -5,8 +5,6 @@
 //
 // anything defined in a previous bundle is accessed via the
 // orig method which is the require for previous bundles
-
-// eslint-disable-next-line no-global-assign
 parcelRequire = (function (modules, cache, entry, globalName) {
   // Save the require from previous bundle to this closure if any
   var previousRequire = typeof parcelRequire === 'function' && parcelRequire;
@@ -77,8 +75,16 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     }, {}];
   };
 
+  var error;
   for (var i = 0; i < entry.length; i++) {
-    newRequire(entry[i]);
+    try {
+      newRequire(entry[i]);
+    } catch (e) {
+      // Save first error but execute all entries
+      if (!error) {
+        error = e;
+      }
+    }
   }
 
   if (entry.length) {
@@ -103,6 +109,13 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   // Override the current require with this new one
+  parcelRequire = newRequire;
+
+  if (error) {
+    // throw error from earlier, _after updating parcelRequire_
+    throw error;
+  }
+
   return newRequire;
 })({"node_modules/sweetalert2/src/utils/utils.js":[function(require,module,exports) {
 "use strict";
@@ -110,7 +123,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isPromise = exports.callIfFunction = exports.warnOnce = exports.error = exports.warn = exports.formatInputOptions = exports.toArray = exports.uniqueArray = exports.consolePrefix = void 0;
+exports.isPromise = exports.callIfFunction = exports.warnAboutDepreation = exports.warnOnce = exports.error = exports.warn = exports.toArray = exports.objectValues = exports.uniqueArray = exports.consolePrefix = void 0;
 const consolePrefix = 'SweetAlert2:';
 /**
  * Filter the unique values into a new array
@@ -131,44 +144,30 @@ const uniqueArray = arr => {
   return result;
 };
 /**
- * Convert NodeList to Array
- * @param nodeList
+ * Returns the array ob object values (Object.values isn't supported in IE11)
+ * @param obj
  */
 
 
 exports.uniqueArray = uniqueArray;
 
-const toArray = nodeList => Array.prototype.slice.call(nodeList);
+const objectValues = obj => Object.keys(obj).map(key => obj[key]);
 /**
- * Converts `inputOptions` into an array of `[value, label]`s
- * @param inputOptions
+ * Convert NodeList to Array
+ * @param nodeList
  */
 
 
-exports.toArray = toArray;
+exports.objectValues = objectValues;
 
-const formatInputOptions = inputOptions => {
-  const result = [];
-
-  if (typeof Map !== 'undefined' && inputOptions instanceof Map) {
-    inputOptions.forEach((value, key) => {
-      result.push([key, value]);
-    });
-  } else {
-    Object.keys(inputOptions).forEach(key => {
-      result.push([key, inputOptions[key]]);
-    });
-  }
-
-  return result;
-};
+const toArray = nodeList => Array.prototype.slice.call(nodeList);
 /**
  * Standardise console warnings
  * @param message
  */
 
 
-exports.formatInputOptions = formatInputOptions;
+exports.toArray = toArray;
 
 const warn = message => {
   console.warn(`${consolePrefix} ${message}`);
@@ -205,13 +204,23 @@ const warnOnce = message => {
   }
 };
 /**
+ * Show a one-time console warning about deprecated params/methods
+ */
+
+
+exports.warnOnce = warnOnce;
+
+const warnAboutDepreation = (deprecatedParam, useInstead) => {
+  warnOnce(`"${deprecatedParam}" is deprecated and will be removed in the next major release. Please use "${useInstead}" instead.`);
+};
+/**
  * If `arg` is a function, call it (with no arguments or context) and return the result.
  * Otherwise, just pass the value through
  * @param arg
  */
 
 
-exports.warnOnce = warnOnce;
+exports.warnAboutDepreation = warnAboutDepreation;
 
 const callIfFunction = arg => typeof arg === 'function' ? arg() : arg;
 
@@ -294,7 +303,7 @@ const prefix = items => {
 };
 
 exports.prefix = prefix;
-const swalClasses = prefix(['container', 'shown', 'height-auto', 'iosfix', 'popup', 'modal', 'no-backdrop', 'toast', 'toast-shown', 'toast-column', 'fade', 'show', 'hide', 'noanimation', 'close', 'title', 'header', 'content', 'actions', 'confirm', 'cancel', 'footer', 'icon', 'icon-text', 'image', 'input', 'file', 'range', 'select', 'radio', 'checkbox', 'label', 'textarea', 'inputerror', 'validation-message', 'progresssteps', 'activeprogressstep', 'progresscircle', 'progressline', 'loading', 'styled', 'top', 'top-start', 'top-end', 'top-left', 'top-right', 'center', 'center-start', 'center-end', 'center-left', 'center-right', 'bottom', 'bottom-start', 'bottom-end', 'bottom-left', 'bottom-right', 'grow-row', 'grow-column', 'grow-fullscreen', 'rtl']);
+const swalClasses = prefix(['container', 'shown', 'height-auto', 'iosfix', 'popup', 'modal', 'no-backdrop', 'toast', 'toast-shown', 'toast-column', 'fade', 'show', 'hide', 'noanimation', 'close', 'title', 'header', 'content', 'actions', 'confirm', 'cancel', 'footer', 'icon', 'image', 'input', 'file', 'range', 'select', 'radio', 'checkbox', 'label', 'textarea', 'inputerror', 'validation-message', 'progress-steps', 'active-progress-step', 'progress-step', 'progress-step-line', 'loading', 'styled', 'top', 'top-start', 'top-end', 'top-left', 'top-right', 'center', 'center-start', 'center-end', 'center-left', 'center-right', 'bottom', 'bottom-start', 'bottom-end', 'bottom-left', 'bottom-right', 'grow-row', 'grow-column', 'grow-fullscreen', 'rtl']);
 exports.swalClasses = swalClasses;
 const iconTypes = prefix(['success', 'warning', 'info', 'question', 'error']);
 exports.iconTypes = iconTypes;
@@ -304,9 +313,12 @@ exports.iconTypes = iconTypes;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.contains = exports.isVisible = exports.hide = exports.show = exports.getChildByClass = exports.removeClass = exports.addClass = exports.focusInput = exports.hasClass = exports.states = void 0;
+exports.getInput = getInput;
+exports.contains = exports.isVisible = exports.toggle = exports.hide = exports.show = exports.applyNumericalStyle = exports.getChildByClass = exports.removeClass = exports.addClass = exports.toggleClass = exports.focusInput = exports.applyCustomClass = exports.hasClass = exports.states = void 0;
 
 var _classes = require("../classes.js");
+
+var _utils = require("../utils.js");
 
 // Remember state in cases where opening and handling a modal will fiddle with it.
 const states = {
@@ -319,6 +331,46 @@ const hasClass = (elem, className) => {
 };
 
 exports.hasClass = hasClass;
+
+const applyCustomClass = (elem, customClass, className) => {
+  // Clean up previous custom classes
+  (0, _utils.toArray)(elem.classList).forEach(className => {
+    if (!(0, _utils.objectValues)(_classes.swalClasses).includes(className) && !(0, _utils.objectValues)(_classes.iconTypes).includes(className)) {
+      elem.classList.remove(className);
+    }
+  });
+
+  if (customClass && customClass[className]) {
+    addClass(elem, customClass[className]);
+  }
+};
+
+exports.applyCustomClass = applyCustomClass;
+
+function getInput(content, inputType) {
+  if (!inputType) {
+    return null;
+  }
+
+  switch (inputType) {
+    case 'select':
+    case 'textarea':
+    case 'file':
+      return getChildByClass(content, _classes.swalClasses[inputType]);
+
+    case 'checkbox':
+      return content.querySelector(`.${_classes.swalClasses.checkbox} input`);
+
+    case 'radio':
+      return content.querySelector(`.${_classes.swalClasses.radio} input:checked`) || content.querySelector(`.${_classes.swalClasses.radio} input:first-child`);
+
+    case 'range':
+      return content.querySelector(`.${_classes.swalClasses.range} input`);
+
+    default:
+      return getChildByClass(content, _classes.swalClasses.input);
+  }
+}
 
 const focusInput = input => {
   input.focus(); // place cursor at end of text in text input
@@ -333,7 +385,7 @@ const focusInput = input => {
 
 exports.focusInput = focusInput;
 
-const addOrRemoveClass = (target, classList, add) => {
+const toggleClass = (target, classList, condition) => {
   if (!target || !classList) {
     return;
   }
@@ -345,22 +397,24 @@ const addOrRemoveClass = (target, classList, add) => {
   classList.forEach(className => {
     if (target.forEach) {
       target.forEach(elem => {
-        add ? elem.classList.add(className) : elem.classList.remove(className);
+        condition ? elem.classList.add(className) : elem.classList.remove(className);
       });
     } else {
-      add ? target.classList.add(className) : target.classList.remove(className);
+      condition ? target.classList.add(className) : target.classList.remove(className);
     }
   });
 };
 
+exports.toggleClass = toggleClass;
+
 const addClass = (target, classList) => {
-  addOrRemoveClass(target, classList, true);
+  toggleClass(target, classList, true);
 };
 
 exports.addClass = addClass;
 
 const removeClass = (target, classList) => {
-  addOrRemoveClass(target, classList, false);
+  toggleClass(target, classList, false);
 };
 
 exports.removeClass = removeClass;
@@ -375,9 +429,19 @@ const getChildByClass = (elem, className) => {
 
 exports.getChildByClass = getChildByClass;
 
-const show = elem => {
+const applyNumericalStyle = (elem, property, value) => {
+  if (value || parseInt(value) === 0) {
+    elem.style[property] = typeof value === 'number' ? value + 'px' : value;
+  } else {
+    elem.style.removeProperty(property);
+  }
+};
+
+exports.applyNumericalStyle = applyNumericalStyle;
+
+const show = (elem, display = 'flex') => {
   elem.style.opacity = '';
-  elem.style.display = elem.id === _classes.swalClasses.content ? 'block' : 'flex';
+  elem.style.display = display;
 };
 
 exports.show = show;
@@ -385,12 +449,18 @@ exports.show = show;
 const hide = elem => {
   elem.style.opacity = '';
   elem.style.display = 'none';
-}; // borrowed from jquery $(elem).is(':visible') implementation
-
+};
 
 exports.hide = hide;
 
-const isVisible = elem => elem && (elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length);
+const toggle = (elem, condition, display) => {
+  condition ? show(elem, display) : hide(elem);
+}; // borrowed from jquery $(elem).is(':visible') implementation
+
+
+exports.toggle = toggle;
+
+const isVisible = elem => !!(elem && (elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length));
 
 exports.isVisible = isVisible;
 
@@ -401,13 +471,13 @@ const contains = (haystack, needle) => {
 };
 
 exports.contains = contains;
-},{"../classes.js":"node_modules/sweetalert2/src/utils/classes.js"}],"node_modules/sweetalert2/src/utils/dom/getters.js":[function(require,module,exports) {
+},{"../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../utils.js":"node_modules/sweetalert2/src/utils/utils.js"}],"node_modules/sweetalert2/src/utils/dom/getters.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isLoading = exports.isToast = exports.isModal = exports.getFocusableElements = exports.getCloseButton = exports.getFooter = exports.getActions = exports.getCancelButton = exports.getConfirmButton = exports.getValidationMessage = exports.getProgressSteps = exports.getImage = exports.getContent = exports.getTitle = exports.getIcons = exports.getPopup = exports.getContainer = void 0;
+exports.isLoading = exports.isToast = exports.isModal = exports.getFocusableElements = exports.getCloseButton = exports.getFooter = exports.getHeader = exports.getActions = exports.getCancelButton = exports.getConfirmButton = exports.getValidationMessage = exports.getProgressSteps = exports.getImage = exports.getContent = exports.getTitle = exports.getIcon = exports.getIcons = exports.getPopup = exports.elementBySelector = exports.getContainer = void 0;
 
 var _classes = require("../classes.js");
 
@@ -419,9 +489,15 @@ const getContainer = () => document.body.querySelector('.' + _classes.swalClasse
 
 exports.getContainer = getContainer;
 
-const elementByClass = className => {
+const elementBySelector = selectorString => {
   const container = getContainer();
-  return container ? container.querySelector('.' + className) : null;
+  return container ? container.querySelector(selectorString) : null;
+};
+
+exports.elementBySelector = elementBySelector;
+
+const elementByClass = className => {
+  return elementBySelector('.' + className);
 };
 
 const getPopup = () => elementByClass(_classes.swalClasses.popup);
@@ -435,6 +511,13 @@ const getIcons = () => {
 
 exports.getIcons = getIcons;
 
+const getIcon = () => {
+  const visibleIcon = getIcons().filter(icon => (0, _domUtils.isVisible)(icon));
+  return visibleIcon.length ? visibleIcon[0] : null;
+};
+
+exports.getIcon = getIcon;
+
 const getTitle = () => elementByClass(_classes.swalClasses.title);
 
 exports.getTitle = getTitle;
@@ -447,7 +530,7 @@ const getImage = () => elementByClass(_classes.swalClasses.image);
 
 exports.getImage = getImage;
 
-const getProgressSteps = () => elementByClass(_classes.swalClasses.progresssteps);
+const getProgressSteps = () => elementByClass(_classes.swalClasses['progress-steps']);
 
 exports.getProgressSteps = getProgressSteps;
 
@@ -455,17 +538,21 @@ const getValidationMessage = () => elementByClass(_classes.swalClasses['validati
 
 exports.getValidationMessage = getValidationMessage;
 
-const getConfirmButton = () => elementByClass(_classes.swalClasses.confirm);
+const getConfirmButton = () => elementBySelector('.' + _classes.swalClasses.actions + ' .' + _classes.swalClasses.confirm);
 
 exports.getConfirmButton = getConfirmButton;
 
-const getCancelButton = () => elementByClass(_classes.swalClasses.cancel);
+const getCancelButton = () => elementBySelector('.' + _classes.swalClasses.actions + ' .' + _classes.swalClasses.cancel);
 
 exports.getCancelButton = getCancelButton;
 
 const getActions = () => elementByClass(_classes.swalClasses.actions);
 
 exports.getActions = getActions;
+
+const getHeader = () => elementByClass(_classes.swalClasses.header);
+
+exports.getHeader = getHeader;
 
 const getFooter = () => elementByClass(_classes.swalClasses.footer);
 
@@ -550,19 +637,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const sweetHTML = `
  <div aria-labelledby="${_classes.swalClasses.title}" aria-describedby="${_classes.swalClasses.content}" class="${_classes.swalClasses.popup}" tabindex="-1">
    <div class="${_classes.swalClasses.header}">
-     <ul class="${_classes.swalClasses.progresssteps}"></ul>
+     <ul class="${_classes.swalClasses['progress-steps']}"></ul>
      <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.error}">
        <span class="swal2-x-mark"><span class="swal2-x-mark-line-left"></span><span class="swal2-x-mark-line-right"></span></span>
      </div>
-     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.question}">
-       <span class="${_classes.swalClasses['icon-text']}">?</span>
-      </div>
-     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.warning}">
-       <span class="${_classes.swalClasses['icon-text']}">!</span>
-      </div>
-     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.info}">
-       <span class="${_classes.swalClasses['icon-text']}">i</span>
-      </div>
+     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.question}"></div>
+     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.warning}"></div>
+     <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.info}"></div>
      <div class="${_classes.swalClasses.icon} ${_classes.iconTypes.success}">
        <div class="swal2-success-circular-line-left"></div>
        <span class="swal2-success-line-tip"></span> <span class="swal2-success-line-long"></span>
@@ -571,7 +652,7 @@ const sweetHTML = `
      </div>
      <img class="${_classes.swalClasses.image}" />
      <h2 class="${_classes.swalClasses.title}" id="${_classes.swalClasses.title}"></h2>
-     <button type="button" class="${_classes.swalClasses.close}">×</button>
+     <button type="button" class="${_classes.swalClasses.close}">&times;</button>
    </div>
    <div class="${_classes.swalClasses.content}">
      <div id="${_classes.swalClasses.content}"></div>
@@ -598,32 +679,29 @@ const sweetHTML = `
    </div>
  </div>
 `.replace(/(^|\n)\s*/g, '');
-/*
- * Add modal + backdrop to DOM
- */
 
-const init = params => {
-  // Clean up the old popup if it exists
-  const c = (0, _getters.getContainer)();
+const resetOldContainer = () => {
+  const oldContainer = (0, _getters.getContainer)();
 
-  if (c) {
-    c.parentNode.removeChild(c);
-    (0, _domUtils.removeClass)([document.documentElement, document.body], [_classes.swalClasses['no-backdrop'], _classes.swalClasses['toast-shown'], _classes.swalClasses['has-column']]);
-  }
-  /* istanbul ignore if */
-
-
-  if ((0, _isNodeEnv.isNodeEnv)()) {
-    (0, _utils.error)('SweetAlert2 requires document to initialize');
+  if (!oldContainer) {
     return;
   }
 
-  const container = document.createElement('div');
-  container.className = _classes.swalClasses.container;
-  container.innerHTML = sweetHTML;
-  let targetElement = typeof params.target === 'string' ? document.querySelector(params.target) : params.target;
-  targetElement.appendChild(container);
-  const popup = (0, _getters.getPopup)();
+  oldContainer.parentNode.removeChild(oldContainer);
+  (0, _domUtils.removeClass)([document.documentElement, document.body], [_classes.swalClasses['no-backdrop'], _classes.swalClasses['toast-shown'], _classes.swalClasses['has-column']]);
+};
+
+let oldInputVal; // IE11 workaround, see #1109 for details
+
+const resetValidationMessage = e => {
+  if (_sweetalert.default.isVisible() && oldInputVal !== e.target.value) {
+    _sweetalert.default.resetValidationMessage();
+  }
+
+  oldInputVal = e.target.value;
+};
+
+const addInputChangeListeners = () => {
   const content = (0, _getters.getContent)();
   const input = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.input);
   const file = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.file);
@@ -631,30 +709,7 @@ const init = params => {
   const rangeOutput = content.querySelector(`.${_classes.swalClasses.range} output`);
   const select = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.select);
   const checkbox = content.querySelector(`.${_classes.swalClasses.checkbox} input`);
-  const textarea = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.textarea); // a11y
-
-  popup.setAttribute('role', params.toast ? 'alert' : 'dialog');
-  popup.setAttribute('aria-live', params.toast ? 'polite' : 'assertive');
-
-  if (!params.toast) {
-    popup.setAttribute('aria-modal', 'true');
-  } // RTL
-
-
-  if (window.getComputedStyle(targetElement).direction === 'rtl') {
-    (0, _domUtils.addClass)((0, _getters.getContainer)(), _classes.swalClasses.rtl);
-  }
-
-  let oldInputVal; // IE11 workaround, see #1109 for details
-
-  const resetValidationMessage = e => {
-    if (_sweetalert.default.isVisible() && oldInputVal !== e.target.value) {
-      _sweetalert.default.resetValidationMessage();
-    }
-
-    oldInputVal = e.target.value;
-  };
-
+  const textarea = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.textarea);
   input.oninput = resetValidationMessage;
   file.onchange = resetValidationMessage;
   select.onchange = resetValidationMessage;
@@ -670,8 +725,48 @@ const init = params => {
     resetValidationMessage(e);
     range.nextSibling.value = range.value;
   };
+};
 
-  return popup;
+const getTarget = target => typeof target === 'string' ? document.querySelector(target) : target;
+
+const setupAccessibility = params => {
+  const popup = (0, _getters.getPopup)();
+  popup.setAttribute('role', params.toast ? 'alert' : 'dialog');
+  popup.setAttribute('aria-live', params.toast ? 'polite' : 'assertive');
+
+  if (!params.toast) {
+    popup.setAttribute('aria-modal', 'true');
+  }
+};
+
+const setupRTL = targetElement => {
+  if (window.getComputedStyle(targetElement).direction === 'rtl') {
+    (0, _domUtils.addClass)((0, _getters.getContainer)(), _classes.swalClasses.rtl);
+  }
+};
+/*
+ * Add modal + backdrop to DOM
+ */
+
+
+const init = params => {
+  // Clean up the old popup container if it exists
+  resetOldContainer();
+  /* istanbul ignore if */
+
+  if ((0, _isNodeEnv.isNodeEnv)()) {
+    (0, _utils.error)('SweetAlert2 requires document to initialize');
+    return;
+  }
+
+  const container = document.createElement('div');
+  container.className = _classes.swalClasses.container;
+  container.innerHTML = sweetHTML;
+  const targetElement = getTarget(params.target);
+  targetElement.appendChild(container);
+  setupAccessibility(params);
+  setupRTL(targetElement);
+  addInputChangeListeners();
 };
 
 exports.init = init;
@@ -683,35 +778,31 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.parseHtmlToContainer = void 0;
 
-var _domUtils = require("./domUtils.js");
-
 const parseHtmlToContainer = (param, target) => {
-  if (!param) {
-    return (0, _domUtils.hide)(target);
-  } // DOM element
-
-
+  // DOM element
   if (param instanceof HTMLElement) {
     target.appendChild(param); // JQuery element(s)
   } else if (typeof param === 'object') {
-    target.innerHTML = '';
-
-    if (0 in param) {
-      for (let i = 0; i in param; i++) {
-        target.appendChild(param[i].cloneNode(true));
-      }
-    } else {
-      target.appendChild(param.cloneNode(true));
-    }
+    handleJqueryElem(target, param); // Plain string
   } else if (param) {
     target.innerHTML = param;
   }
-
-  (0, _domUtils.show)(target);
 };
 
 exports.parseHtmlToContainer = parseHtmlToContainer;
-},{"./domUtils.js":"node_modules/sweetalert2/src/utils/dom/domUtils.js"}],"node_modules/sweetalert2/src/utils/dom/animationEndEvent.js":[function(require,module,exports) {
+
+const handleJqueryElem = (target, elem) => {
+  target.innerHTML = '';
+
+  if (0 in elem) {
+    for (let i = 0; i in elem; i++) {
+      target.appendChild(elem[i].cloneNode(true));
+    }
+  } else {
+    target.appendChild(elem.cloneNode(true));
+  }
+};
+},{}],"node_modules/sweetalert2/src/utils/dom/animationEndEvent.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -788,7 +879,36 @@ var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderActions = params => {
+function handleButtonsStyling(confirmButton, cancelButton, params) {
+  dom.addClass([confirmButton, cancelButton], _classes.swalClasses.styled); // Buttons background colors
+
+  if (params.confirmButtonColor) {
+    confirmButton.style.backgroundColor = params.confirmButtonColor;
+  }
+
+  if (params.cancelButtonColor) {
+    cancelButton.style.backgroundColor = params.cancelButtonColor;
+  } // Loading state
+
+
+  const confirmButtonBackgroundColor = window.getComputedStyle(confirmButton).getPropertyValue('background-color');
+  confirmButton.style.borderLeftColor = confirmButtonBackgroundColor;
+  confirmButton.style.borderRightColor = confirmButtonBackgroundColor;
+}
+
+function renderButton(button, buttonType, params) {
+  dom.toggle(button, params['showC' + buttonType.substring(1) + 'Button'], 'inline-block');
+  button.innerHTML = params[buttonType + 'ButtonText']; // Set caption text
+
+  button.setAttribute('aria-label', params[buttonType + 'ButtonAriaLabel']); // ARIA label
+  // Add buttons custom classes
+
+  button.className = _classes.swalClasses[buttonType];
+  dom.applyCustomClass(button, params.customClass, buttonType + 'Button');
+  dom.addClass(button, params[buttonType + 'ButtonClass']);
+}
+
+const renderActions = (instance, params) => {
   const actions = dom.getActions();
   const confirmButton = dom.getConfirmButton();
   const cancelButton = dom.getCancelButton(); // Actions (buttons) wrapper
@@ -797,49 +917,17 @@ const renderActions = params => {
     dom.hide(actions);
   } else {
     dom.show(actions);
-  } // Cancel button
+  } // Custom class
 
 
-  if (params.showCancelButton) {
-    cancelButton.style.display = 'inline-block';
-  } else {
-    dom.hide(cancelButton);
-  } // Confirm button
+  dom.applyCustomClass(actions, params.customClass, 'actions'); // Render confirm button
 
+  renderButton(confirmButton, 'confirm', params); // render Cancel Button
 
-  if (params.showConfirmButton) {
-    confirmButton.style.removeProperty('display');
-  } else {
-    dom.hide(confirmButton);
-  } // Edit text on confirm and cancel buttons
-
-
-  confirmButton.innerHTML = params.confirmButtonText;
-  cancelButton.innerHTML = params.cancelButtonText; // ARIA labels for confirm and cancel buttons
-
-  confirmButton.setAttribute('aria-label', params.confirmButtonAriaLabel);
-  cancelButton.setAttribute('aria-label', params.cancelButtonAriaLabel); // Add buttons custom classes
-
-  confirmButton.className = _classes.swalClasses.confirm;
-  dom.addClass(confirmButton, params.confirmButtonClass);
-  cancelButton.className = _classes.swalClasses.cancel;
-  dom.addClass(cancelButton, params.cancelButtonClass); // Buttons styling
+  renderButton(cancelButton, 'cancel', params);
 
   if (params.buttonsStyling) {
-    dom.addClass([confirmButton, cancelButton], _classes.swalClasses.styled); // Buttons background colors
-
-    if (params.confirmButtonColor) {
-      confirmButton.style.backgroundColor = params.confirmButtonColor;
-    }
-
-    if (params.cancelButtonColor) {
-      cancelButton.style.backgroundColor = params.cancelButtonColor;
-    } // Loading state
-
-
-    const confirmButtonBackgroundColor = window.getComputedStyle(confirmButton).getPropertyValue('background-color');
-    confirmButton.style.borderLeftColor = confirmButtonBackgroundColor;
-    confirmButton.style.borderRightColor = confirmButtonBackgroundColor;
+    handleButtonsStyling(confirmButton, cancelButton, params);
   } else {
     dom.removeClass([confirmButton, cancelButton], _classes.swalClasses.styled);
     confirmButton.style.backgroundColor = confirmButton.style.borderLeftColor = confirmButton.style.borderRightColor = '';
@@ -848,7 +936,272 @@ const renderActions = params => {
 };
 
 exports.renderActions = renderActions;
-},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderContent.js":[function(require,module,exports) {
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderContainer.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.renderContainer = void 0;
+
+var _classes = require("../../classes.js");
+
+var _utils = require("../../utils.js");
+
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function handleBackdropParam(container, backdrop) {
+  if (typeof backdrop === 'string') {
+    container.style.background = backdrop;
+  } else if (!backdrop) {
+    dom.addClass([document.documentElement, document.body], _classes.swalClasses['no-backdrop']);
+  }
+}
+
+function handlePositionParam(container, position) {
+  if (position in _classes.swalClasses) {
+    dom.addClass(container, _classes.swalClasses[position]);
+  } else {
+    (0, _utils.warn)('The "position" parameter is not valid, defaulting to "center"');
+    dom.addClass(container, _classes.swalClasses.center);
+  }
+}
+
+function handleGrowParam(container, grow) {
+  if (grow && typeof grow === 'string') {
+    let growClass = 'grow-' + grow;
+
+    if (growClass in _classes.swalClasses) {
+      dom.addClass(container, _classes.swalClasses[growClass]);
+    }
+  }
+}
+
+const renderContainer = (instance, params) => {
+  const container = dom.getContainer();
+
+  if (!container) {
+    return;
+  }
+
+  handleBackdropParam(container, params.backdrop);
+
+  if (!params.backdrop && params.allowOutsideClick) {
+    (0, _utils.warn)('"allowOutsideClick" parameter requires `backdrop` parameter to be set to `true`');
+  }
+
+  handlePositionParam(container, params.position);
+  handleGrowParam(container, params.grow); // Custom class
+
+  dom.applyCustomClass(container, params.customClass, 'container');
+
+  if (params.customContainerClass) {
+    // @deprecated
+    dom.addClass(container, params.customContainerClass);
+  }
+};
+
+exports.renderContainer = renderContainer;
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../utils.js":"node_modules/sweetalert2/src/utils/utils.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/privateProps.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+/**
+ * This module containts `WeakMap`s for each effectively-"private  property" that a `Swal` has.
+ * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
+ * This is the approach that Babel will probably take to implement private methods/fields
+ *   https://github.com/tc39/proposal-private-methods
+ *   https://github.com/babel/babel/pull/7555
+ * Once we have the changes from that PR in Babel, and our core class fits reasonable in *one module*
+ *   then we can use that language feature.
+ */
+var _default = {
+  promise: new WeakMap(),
+  innerParams: new WeakMap(),
+  domCache: new WeakMap()
+};
+exports.default = _default;
+},{}],"node_modules/sweetalert2/src/utils/dom/renderers/renderInput.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.renderInput = void 0;
+
+var _classes = require("../../classes.js");
+
+var _utils = require("../../utils.js");
+
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
+
+var _privateProps = _interopRequireDefault(require("../../../privateProps.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const renderInput = (instance, params) => {
+  const innerParams = _privateProps.default.innerParams.get(instance);
+
+  const rerender = !innerParams || params.input !== innerParams.input;
+  const content = dom.getContent();
+  const inputTypes = ['input', 'file', 'range', 'select', 'radio', 'checkbox', 'textarea'];
+
+  for (let i = 0; i < inputTypes.length; i++) {
+    const inputClass = _classes.swalClasses[inputTypes[i]];
+    const inputContainer = dom.getChildByClass(content, inputClass); // set attributes
+
+    setAttributes(inputTypes[i], params.inputAttributes); // set class
+
+    setClass(inputContainer, inputClass, params);
+    rerender && dom.hide(inputContainer);
+  }
+
+  if (!params.input) {
+    return;
+  }
+
+  if (!renderInputType[params.input]) {
+    return (0, _utils.error)(`Unexpected type of input! Expected "text", "email", "password", "number", "tel", "select", "radio", "checkbox", "textarea", "file" or "url", got "${params.input}"`);
+  }
+
+  if (rerender) {
+    const input = renderInputType[params.input](params);
+    dom.show(input);
+  }
+};
+
+exports.renderInput = renderInput;
+
+const removeAttributes = input => {
+  for (let i = 0; i < input.attributes.length; i++) {
+    const attrName = input.attributes[i].name;
+
+    if (!['type', 'value', 'style'].includes(attrName)) {
+      input.removeAttribute(attrName);
+    }
+  }
+};
+
+const setAttributes = (inputType, inputAttributes) => {
+  const input = dom.getInput(dom.getContent(), inputType);
+
+  if (!input) {
+    return;
+  }
+
+  removeAttributes(input);
+
+  for (let attr in inputAttributes) {
+    // Do not set a placeholder for <input type="range">
+    // it'll crash Edge, #1298
+    if (inputType === 'range' && attr === 'placeholder') {
+      continue;
+    }
+
+    input.setAttribute(attr, inputAttributes[attr]);
+  }
+};
+
+const setClass = (inputContainer, inputClass, params) => {
+  inputContainer.className = inputClass;
+
+  if (params.inputClass) {
+    dom.addClass(inputContainer, params.inputClass);
+  }
+
+  if (params.customClass) {
+    dom.addClass(inputContainer, params.customClass.input);
+  }
+};
+
+const setInputPlaceholder = (input, params) => {
+  if (!input.placeholder || params.inputPlaceholder) {
+    input.placeholder = params.inputPlaceholder;
+  }
+};
+
+const renderInputType = {};
+
+renderInputType.text = renderInputType.email = renderInputType.password = renderInputType.number = renderInputType.tel = renderInputType.url = params => {
+  const input = dom.getChildByClass(dom.getContent(), _classes.swalClasses.input);
+
+  if (typeof params.inputValue === 'string' || typeof params.inputValue === 'number') {
+    input.value = params.inputValue;
+  } else if (!(0, _utils.isPromise)(params.inputValue)) {
+    (0, _utils.warn)(`Unexpected type of inputValue! Expected "string", "number" or "Promise", got "${typeof params.inputValue}"`);
+  }
+
+  setInputPlaceholder(input, params);
+  input.type = params.input;
+  return input;
+};
+
+renderInputType.file = params => {
+  const input = dom.getChildByClass(dom.getContent(), _classes.swalClasses.file);
+  setInputPlaceholder(input, params);
+  input.type = params.input;
+  return input;
+};
+
+renderInputType.range = params => {
+  const range = dom.getChildByClass(dom.getContent(), _classes.swalClasses.range);
+  const rangeInput = range.querySelector('input');
+  const rangeOutput = range.querySelector('output');
+  rangeInput.value = params.inputValue;
+  rangeInput.type = params.input;
+  rangeOutput.value = params.inputValue;
+  return range;
+};
+
+renderInputType.select = params => {
+  const select = dom.getChildByClass(dom.getContent(), _classes.swalClasses.select);
+  select.innerHTML = '';
+
+  if (params.inputPlaceholder) {
+    const placeholder = document.createElement('option');
+    placeholder.innerHTML = params.inputPlaceholder;
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+  }
+
+  return select;
+};
+
+renderInputType.radio = () => {
+  const radio = dom.getChildByClass(dom.getContent(), _classes.swalClasses.radio);
+  radio.innerHTML = '';
+  return radio;
+};
+
+renderInputType.checkbox = params => {
+  const checkbox = dom.getChildByClass(dom.getContent(), _classes.swalClasses.checkbox);
+  const checkboxInput = dom.getInput(dom.getContent(), 'checkbox');
+  checkboxInput.type = 'checkbox';
+  checkboxInput.value = 1;
+  checkboxInput.id = _classes.swalClasses.checkbox;
+  checkboxInput.checked = Boolean(params.inputValue);
+  let label = checkbox.querySelector('span');
+  label.innerHTML = params.inputPlaceholder;
+  return checkbox;
+};
+
+renderInputType.textarea = params => {
+  const textarea = dom.getChildByClass(dom.getContent(), _classes.swalClasses.textarea);
+  textarea.value = params.inputValue;
+  setInputPlaceholder(textarea, params);
+  return textarea;
+};
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../utils.js":"node_modules/sweetalert2/src/utils/utils.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../../../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderContent.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -860,23 +1213,76 @@ var _classes = require("../../classes.js");
 
 var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
+var _renderInput = require("./renderInput.js");
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderContent = params => {
+const renderContent = (instance, params) => {
   const content = dom.getContent().querySelector('#' + _classes.swalClasses.content); // Content as HTML
 
   if (params.html) {
-    dom.parseHtmlToContainer(params.html, content); // Content as plain text
+    dom.parseHtmlToContainer(params.html, content);
+    dom.show(content, 'block'); // Content as plain text
   } else if (params.text) {
     content.textContent = params.text;
-    dom.show(content);
+    dom.show(content, 'block'); // No content
   } else {
     dom.hide(content);
   }
+
+  (0, _renderInput.renderInput)(instance, params); // Custom class
+
+  dom.applyCustomClass(dom.getContent(), params.customClass, 'content');
 };
 
 exports.renderContent = renderContent;
-},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderIcon.js":[function(require,module,exports) {
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./renderInput.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderInput.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderFooter.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.renderFooter = void 0;
+
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const renderFooter = (instance, params) => {
+  const footer = dom.getFooter();
+  dom.toggle(footer, params.footer);
+
+  if (params.footer) {
+    dom.parseHtmlToContainer(params.footer, footer);
+  } // Custom class
+
+
+  dom.applyCustomClass(footer, params.customClass, 'footer');
+};
+
+exports.renderFooter = renderFooter;
+},{"../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderCloseButton.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.renderCloseButton = void 0;
+
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const renderCloseButton = (instance, params) => {
+  const closeButton = dom.getCloseButton(); // Custom class
+
+  dom.applyCustomClass(closeButton, params.customClass, 'closeButton');
+  dom.toggle(closeButton, params.showCloseButton);
+  closeButton.setAttribute('aria-label', params.closeButtonAriaLabel);
+};
+
+exports.renderCloseButton = renderCloseButton;
+},{"../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderIcon.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -890,36 +1296,63 @@ var _utils = require("../../utils.js");
 
 var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
-var _sweetalert = _interopRequireDefault(require("../../../sweetalert2.js"));
+var _privateProps = _interopRequireDefault(require("../../../privateProps.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderIcon = params => {
+const renderIcon = (instance, params) => {
+  const innerParams = _privateProps.default.innerParams.get(instance); // if the icon with the given type already rendered,
+  // apply the custom class without re-rendering the icon
+
+
+  if (innerParams && params.type === innerParams.type && dom.getIcon()) {
+    dom.applyCustomClass(dom.getIcon(), params.customClass, 'icon');
+    return;
+  }
+
+  hideAllIcons();
+
+  if (!params.type) {
+    return;
+  }
+
+  adjustSuccessIconBackgoundColor();
+
+  if (Object.keys(_classes.iconTypes).indexOf(params.type) !== -1) {
+    const icon = dom.elementBySelector(`.${_classes.swalClasses.icon}.${_classes.iconTypes[params.type]}`);
+    dom.show(icon); // Custom class
+
+    dom.applyCustomClass(icon, params.customClass, 'icon'); // Animate icon
+
+    dom.toggleClass(icon, `swal2-animate-${params.type}-icon`, params.animation);
+  } else {
+    (0, _utils.error)(`Unknown type! Expected "success", "error", "warning", "info" or "question", got "${params.type}"`);
+  }
+};
+
+exports.renderIcon = renderIcon;
+
+const hideAllIcons = () => {
   const icons = dom.getIcons();
 
   for (let i = 0; i < icons.length; i++) {
     dom.hide(icons[i]);
   }
+}; // Adjust success icon background color to match the popup background color
 
-  if (params.type) {
-    if (Object.keys(_classes.iconTypes).indexOf(params.type) !== -1) {
-      const icon = _sweetalert.default.getPopup().querySelector(`.${_classes.swalClasses.icon}.${_classes.iconTypes[params.type]}`);
 
-      dom.show(icon); // Animate icon
+const adjustSuccessIconBackgoundColor = () => {
+  const popup = dom.getPopup();
+  const popupBackgroundColor = window.getComputedStyle(popup).getPropertyValue('background-color');
+  const successIconParts = popup.querySelectorAll('[class^=swal2-success-circular-line], .swal2-success-fix');
 
-      if (params.animation) {
-        dom.addClass(icon, `swal2-animate-${params.type}-icon`);
-      }
-    } else {
-      (0, _utils.error)(`Unknown type! Expected "success", "error", "warning", "info" or "question", got "${params.type}"`);
-    }
+  for (let i = 0; i < successIconParts.length; i++) {
+    successIconParts[i].style.backgroundColor = popupBackgroundColor;
   }
 };
-
-exports.renderIcon = renderIcon;
-},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../utils.js":"node_modules/sweetalert2/src/utils/utils.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../../../sweetalert2.js":"node_modules/sweetalert2/src/sweetalert2.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderImage.js":[function(require,module,exports) {
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../utils.js":"node_modules/sweetalert2/src/utils/utils.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../../../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderImage.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -933,33 +1366,26 @@ var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderImage = params => {
+const renderImage = (instance, params) => {
   const image = dom.getImage();
 
-  if (params.imageUrl) {
-    image.setAttribute('src', params.imageUrl);
-    image.setAttribute('alt', params.imageAlt);
-    dom.show(image);
+  if (!params.imageUrl) {
+    return dom.hide(image);
+  }
 
-    if (params.imageWidth) {
-      image.setAttribute('width', params.imageWidth);
-    } else {
-      image.removeAttribute('width');
-    }
+  dom.show(image); // Src, alt
 
-    if (params.imageHeight) {
-      image.setAttribute('height', params.imageHeight);
-    } else {
-      image.removeAttribute('height');
-    }
+  image.setAttribute('src', params.imageUrl);
+  image.setAttribute('alt', params.imageAlt); // Width, height
 
-    image.className = _classes.swalClasses.image;
+  dom.applyNumericalStyle(image, 'width', params.imageWidth);
+  dom.applyNumericalStyle(image, 'height', params.imageHeight); // Class
 
-    if (params.imageClass) {
-      dom.addClass(image, params.imageClass);
-    }
-  } else {
-    dom.hide(image);
+  image.className = _classes.swalClasses.image;
+  dom.applyCustomClass(image, params.customClass, 'image');
+
+  if (params.imageClass) {
+    dom.addClass(image, params.imageClass);
   }
 };
 
@@ -984,43 +1410,52 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderProgressSteps = params => {
+const createStepElement = step => {
+  const stepEl = document.createElement('li');
+  dom.addClass(stepEl, _classes.swalClasses['progress-step']);
+  stepEl.innerHTML = step;
+  return stepEl;
+};
+
+const createLineElement = params => {
+  let lineEl = document.createElement('li');
+  dom.addClass(lineEl, _classes.swalClasses['progress-step-line']);
+
+  if (params.progressStepsDistance) {
+    lineEl.style.width = params.progressStepsDistance;
+  }
+
+  return lineEl;
+};
+
+const renderProgressSteps = (instance, params) => {
   let progressStepsContainer = dom.getProgressSteps();
-  let currentProgressStep = parseInt(params.currentProgressStep === null ? _sweetalert.default.getQueueStep() : params.currentProgressStep, 10);
 
-  if (params.progressSteps && params.progressSteps.length) {
-    dom.show(progressStepsContainer);
-    progressStepsContainer.innerHTML = '';
+  if (!params.progressSteps || params.progressSteps.length === 0) {
+    return dom.hide(progressStepsContainer);
+  }
 
-    if (currentProgressStep >= params.progressSteps.length) {
-      (0, _utils.warn)('Invalid currentProgressStep parameter, it should be less than progressSteps.length ' + '(currentProgressStep like JS arrays starts from 0)');
+  dom.show(progressStepsContainer);
+  progressStepsContainer.innerHTML = '';
+  const currentProgressStep = parseInt(params.currentProgressStep === null ? _sweetalert.default.getQueueStep() : params.currentProgressStep);
+
+  if (currentProgressStep >= params.progressSteps.length) {
+    (0, _utils.warn)('Invalid currentProgressStep parameter, it should be less than progressSteps.length ' + '(currentProgressStep like JS arrays starts from 0)');
+  }
+
+  params.progressSteps.forEach((step, index) => {
+    const stepEl = createStepElement(step);
+    progressStepsContainer.appendChild(stepEl);
+
+    if (index === currentProgressStep) {
+      dom.addClass(stepEl, _classes.swalClasses['active-progress-step']);
     }
 
-    params.progressSteps.forEach((step, index) => {
-      let circle = document.createElement('li');
-      dom.addClass(circle, _classes.swalClasses.progresscircle);
-      circle.innerHTML = step;
-
-      if (index === currentProgressStep) {
-        dom.addClass(circle, _classes.swalClasses.activeprogressstep);
-      }
-
-      progressStepsContainer.appendChild(circle);
-
-      if (index !== params.progressSteps.length - 1) {
-        let line = document.createElement('li');
-        dom.addClass(line, _classes.swalClasses.progressline);
-
-        if (params.progressStepsDistance) {
-          line.style.width = params.progressStepsDistance;
-        }
-
-        progressStepsContainer.appendChild(line);
-      }
-    });
-  } else {
-    dom.hide(progressStepsContainer);
-  }
+    if (index !== params.progressSteps.length - 1) {
+      const lineEl = createLineElement(step, index);
+      progressStepsContainer.appendChild(lineEl);
+    }
+  });
 };
 
 exports.renderProgressSteps = renderProgressSteps;
@@ -1036,100 +1471,140 @@ var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-const renderTitle = params => {
+const renderTitle = (instance, params) => {
   const title = dom.getTitle();
+  dom.toggle(title, params.title || params.titleText);
+
+  if (params.title) {
+    dom.parseHtmlToContainer(params.title, title);
+  }
 
   if (params.titleText) {
     title.innerText = params.titleText;
-  } else if (params.title) {
-    if (typeof params.title === 'string') {
-      params.title = params.title.split('\n').join('<br />');
-    }
+  } // Custom class
 
-    dom.parseHtmlToContainer(params.title, title);
-  }
+
+  dom.applyCustomClass(title, params.customClass, 'title');
 };
 
 exports.renderTitle = renderTitle;
-},{"../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/index.js":[function(require,module,exports) {
+},{"../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderHeader.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.renderHeader = void 0;
 
-var _renderActions = require("./renderActions.js");
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
 
-Object.keys(_renderActions).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderActions[key];
-    }
-  });
-});
-
-var _renderContent = require("./renderContent.js");
-
-Object.keys(_renderContent).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderContent[key];
-    }
-  });
-});
+var _renderCloseButton = require("./renderCloseButton.js");
 
 var _renderIcon = require("./renderIcon.js");
 
-Object.keys(_renderIcon).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderIcon[key];
-    }
-  });
-});
-
 var _renderImage = require("./renderImage.js");
-
-Object.keys(_renderImage).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderImage[key];
-    }
-  });
-});
 
 var _renderProgressSteps = require("./renderProgressSteps.js");
 
-Object.keys(_renderProgressSteps).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderProgressSteps[key];
-    }
-  });
-});
-
 var _renderTitle = require("./renderTitle.js");
 
-Object.keys(_renderTitle).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _renderTitle[key];
-    }
-  });
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const renderHeader = (instance, params) => {
+  const header = dom.getHeader(); // Custom class
+
+  dom.applyCustomClass(header, params.customClass, 'header'); // Progress steps
+
+  (0, _renderProgressSteps.renderProgressSteps)(instance, params); // Icon
+
+  (0, _renderIcon.renderIcon)(instance, params); // Image
+
+  (0, _renderImage.renderImage)(instance, params); // Title
+
+  (0, _renderTitle.renderTitle)(instance, params); // Close button
+
+  (0, _renderCloseButton.renderCloseButton)(instance, params);
+};
+
+exports.renderHeader = renderHeader;
+},{"../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./renderCloseButton.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderCloseButton.js","./renderIcon.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderIcon.js","./renderImage.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderImage.js","./renderProgressSteps.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderProgressSteps.js","./renderTitle.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderTitle.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/renderPopup.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
-},{"./renderActions.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderActions.js","./renderContent.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderContent.js","./renderIcon.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderIcon.js","./renderImage.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderImage.js","./renderProgressSteps.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderProgressSteps.js","./renderTitle.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderTitle.js"}],"node_modules/sweetalert2/src/utils/dom/index.js":[function(require,module,exports) {
+exports.renderPopup = void 0;
+
+var _classes = require("../../classes.js");
+
+var dom = _interopRequireWildcard(require("../../dom/index.js"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const renderPopup = (instance, params) => {
+  const popup = dom.getPopup(); // Width
+
+  dom.applyNumericalStyle(popup, 'width', params.width); // Padding
+
+  dom.applyNumericalStyle(popup, 'padding', params.padding); // Background
+
+  if (params.background) {
+    popup.style.background = params.background;
+  } // Default Class
+
+
+  popup.className = _classes.swalClasses.popup;
+
+  if (params.toast) {
+    dom.addClass([document.documentElement, document.body], _classes.swalClasses['toast-shown']);
+    dom.addClass(popup, _classes.swalClasses.toast);
+  } else {
+    dom.addClass(popup, _classes.swalClasses.modal);
+  } // Custom class
+
+
+  dom.applyCustomClass(popup, params.customClass, 'popup');
+
+  if (typeof params.customClass === 'string') {
+    dom.addClass(popup, params.customClass);
+  } // CSS animation
+
+
+  dom.toggleClass(popup, _classes.swalClasses.noanimation, !params.animation);
+};
+
+exports.renderPopup = renderPopup;
+},{"../../classes.js":"node_modules/sweetalert2/src/utils/classes.js","../../dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/utils/dom/renderers/render.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.render = void 0;
+
+var _renderActions = require("./renderActions.js");
+
+var _renderContainer = require("./renderContainer.js");
+
+var _renderContent = require("./renderContent.js");
+
+var _renderFooter = require("./renderFooter.js");
+
+var _renderHeader = require("./renderHeader.js");
+
+var _renderPopup = require("./renderPopup.js");
+
+const render = (instance, params) => {
+  (0, _renderPopup.renderPopup)(instance, params);
+  (0, _renderContainer.renderContainer)(instance, params);
+  (0, _renderHeader.renderHeader)(instance, params);
+  (0, _renderContent.renderContent)(instance, params);
+  (0, _renderActions.renderActions)(instance, params);
+  (0, _renderFooter.renderFooter)(instance, params);
+};
+
+exports.render = render;
+},{"./renderActions.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderActions.js","./renderContainer.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderContainer.js","./renderContent.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderContent.js","./renderFooter.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderFooter.js","./renderHeader.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderHeader.js","./renderPopup.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderPopup.js"}],"node_modules/sweetalert2/src/utils/dom/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1208,18 +1683,18 @@ Object.keys(_measureScrollbar).forEach(function (key) {
   });
 });
 
-var _index = require("./renderers/index.js");
+var _render = require("./renderers/render.js");
 
-Object.keys(_index).forEach(function (key) {
+Object.keys(_render).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return _index[key];
+      return _render[key];
     }
   });
 });
-},{"./domUtils.js":"node_modules/sweetalert2/src/utils/dom/domUtils.js","./init.js":"node_modules/sweetalert2/src/utils/dom/init.js","./getters.js":"node_modules/sweetalert2/src/utils/dom/getters.js","./parseHtmlToContainer.js":"node_modules/sweetalert2/src/utils/dom/parseHtmlToContainer.js","./animationEndEvent.js":"node_modules/sweetalert2/src/utils/dom/animationEndEvent.js","./measureScrollbar.js":"node_modules/sweetalert2/src/utils/dom/measureScrollbar.js","./renderers/index.js":"node_modules/sweetalert2/src/utils/dom/renderers/index.js"}],"node_modules/sweetalert2/src/staticMethods/dom.js":[function(require,module,exports) {
+},{"./domUtils.js":"node_modules/sweetalert2/src/utils/dom/domUtils.js","./init.js":"node_modules/sweetalert2/src/utils/dom/init.js","./getters.js":"node_modules/sweetalert2/src/utils/dom/getters.js","./parseHtmlToContainer.js":"node_modules/sweetalert2/src/utils/dom/parseHtmlToContainer.js","./animationEndEvent.js":"node_modules/sweetalert2/src/utils/dom/animationEndEvent.js","./measureScrollbar.js":"node_modules/sweetalert2/src/utils/dom/measureScrollbar.js","./renderers/render.js":"node_modules/sweetalert2/src/utils/dom/renderers/render.js"}],"node_modules/sweetalert2/src/staticMethods/dom.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1255,6 +1730,12 @@ Object.defineProperty(exports, "getImage", {
     return dom.getImage;
   }
 });
+Object.defineProperty(exports, "getIcon", {
+  enumerable: true,
+  get: function () {
+    return dom.getIcon;
+  }
+});
 Object.defineProperty(exports, "getIcons", {
   enumerable: true,
   get: function () {
@@ -1285,6 +1766,12 @@ Object.defineProperty(exports, "getCancelButton", {
     return dom.getCancelButton;
   }
 });
+Object.defineProperty(exports, "getHeader", {
+  enumerable: true,
+  get: function () {
+    return dom.getHeader;
+  }
+});
 Object.defineProperty(exports, "getFooter", {
   enumerable: true,
   get: function () {
@@ -1313,13 +1800,15 @@ exports.clickCancel = exports.clickConfirm = exports.isVisible = void 0;
 
 var dom = _interopRequireWildcard(require("../utils/dom/index.js"));
 
+var domUtils = _interopRequireWildcard(require("../utils/dom/domUtils.js"));
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 /*
  * Global function to determine if SweetAlert2 popup is shown
  */
 const isVisible = () => {
-  return !!dom.getPopup();
+  return domUtils.isVisible(dom.getPopup());
 };
 /*
  * Global function to click 'Confirm' button
@@ -1328,7 +1817,7 @@ const isVisible = () => {
 
 exports.isVisible = isVisible;
 
-const clickConfirm = () => dom.getConfirmButton().click();
+const clickConfirm = () => dom.getConfirmButton() && dom.getConfirmButton().click();
 /*
  * Global function to click 'Cancel' button
  */
@@ -1336,10 +1825,10 @@ const clickConfirm = () => dom.getConfirmButton().click();
 
 exports.clickConfirm = clickConfirm;
 
-const clickCancel = () => dom.getCancelButton().click();
+const clickCancel = () => dom.getCancelButton() && dom.getCancelButton().click();
 
 exports.clickCancel = clickCancel;
-},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js"}],"node_modules/sweetalert2/src/staticMethods/fire.js":[function(require,module,exports) {
+},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../utils/dom/domUtils.js":"node_modules/sweetalert2/src/utils/dom/domUtils.js"}],"node_modules/sweetalert2/src/staticMethods/fire.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1404,9 +1893,10 @@ const queue = function (steps) {
   const Swal = this;
   currentSteps = steps;
 
-  const resetQueue = () => {
+  const resetAndResolve = (resolve, value) => {
     currentSteps = [];
     document.body.removeAttribute('data-swal2-queue-step');
+    resolve(value);
   };
 
   let queueResult = [];
@@ -1419,15 +1909,13 @@ const queue = function (steps) {
             queueResult.push(result.value);
             step(i + 1, callback);
           } else {
-            resetQueue();
-            resolve({
+            resetAndResolve(resolve, {
               dismiss: result.dismiss
             });
           }
         });
       } else {
-        resetQueue();
-        resolve({
+        resetAndResolve(resolve, {
           value: queueResult
         });
       }
@@ -1533,22 +2021,25 @@ exports.restoreActiveElement = exports.default = void 0;
 var _constants = require("./constants.js");
 
 const globalState = {};
-var _default = globalState; // Restore previous active (focused) element
-
+var _default = globalState;
 exports.default = _default;
+
+const focusPreviousActiveElement = () => {
+  if (globalState.previousActiveElement && globalState.previousActiveElement.focus) {
+    globalState.previousActiveElement.focus();
+    globalState.previousActiveElement = null;
+  } else if (document.body) {
+    document.body.focus();
+  }
+}; // Restore previous active (focused) element
+
 
 const restoreActiveElement = () => {
   return new Promise(resolve => {
     const x = window.scrollX;
     const y = window.scrollY;
     globalState.restoreFocusTimeout = setTimeout(() => {
-      if (globalState.previousActiveElement && globalState.previousActiveElement.focus) {
-        globalState.previousActiveElement.focus();
-        globalState.previousActiveElement = null;
-      } else if (document.body) {
-        document.body.focus();
-      }
-
+      focusPreviousActiveElement();
       resolve();
     }, _constants.RESTORE_FOCUS_TIMEOUT); // issues/900
 
@@ -1711,9 +2202,17 @@ const defaultParams = {
   onBeforeOpen: null,
   onAfterClose: null,
   onOpen: null,
-  onClose: null
+  onClose: null,
+  scrollbarPadding: true
 };
-const deprecatedParams = [];
+const updatableParams = ['title', 'titleText', 'text', 'html', 'type', 'customClass', 'showConfirmButton', 'showCancelButton', 'confirmButtonText', 'confirmButtonAriaLabel', 'confirmButtonColor', 'confirmButtonClass', 'cancelButtonText', 'cancelButtonAriaLabel', 'cancelButtonColor', 'cancelButtonClass', 'buttonsStyling', 'reverseButtons', 'imageUrl', 'imageWidth', 'imageHeigth', 'imageAlt', 'imageClass', 'progressSteps', 'currentProgressStep'];
+const deprecatedParams = {
+  customContainerClass: 'customClass',
+  confirmButtonClass: 'customClass',
+  cancelButtonClass: 'customClass',
+  imageClass: 'customClass',
+  inputClass: 'customClass'
+};
 exports.deprecatedParams = deprecatedParams;
 const toastIncompatibleParams = ['allowOutsideClick', 'allowEnterKey', 'backdrop', 'focusConfirm', 'focusCancel', 'heightAuto', 'keydownListenerCapture'];
 /**
@@ -1733,7 +2232,7 @@ const isValidParameter = paramName => {
 exports.isValidParameter = isValidParameter;
 
 const isUpdatableParameter = paramName => {
-  return ['title', 'titleText', 'text', 'html', 'type', 'showConfirmButton', 'showCancelButton', 'confirmButtonText', 'confirmButtonAriaLabel', 'confirmButtonColor', 'confirmButtonClass', 'cancelButtonText', 'cancelButtonAriaLabel', 'cancelButtonColor', 'cancelButtonClass', 'buttonsStyling', 'reverseButtons', 'imageUrl', 'imageWidth', 'imageHeigth', 'imageAlt', 'imageClass', 'progressSteps', 'currentProgressStep'].indexOf(paramName) !== -1;
+  return updatableParams.indexOf(paramName) !== -1;
 };
 /**
  * Is deprecated parameter
@@ -1744,7 +2243,27 @@ const isUpdatableParameter = paramName => {
 exports.isUpdatableParameter = isUpdatableParameter;
 
 const isDeprecatedParameter = paramName => {
-  return deprecatedParams.includes(paramName);
+  return deprecatedParams[paramName];
+};
+
+exports.isDeprecatedParameter = isDeprecatedParameter;
+
+const checkIfParamIsValid = param => {
+  if (!isValidParameter(param)) {
+    (0, _utils.warn)(`Unknown parameter "${param}"`);
+  }
+};
+
+const checkIfToastParamIsValid = param => {
+  if (toastIncompatibleParams.includes(param)) {
+    (0, _utils.warn)(`The parameter "${param}" is incompatible with toasts`);
+  }
+};
+
+const checkIfParamIsDeprecated = param => {
+  if (isDeprecatedParameter(param)) {
+    (0, _utils.warnAboutDepreation)(param, isDeprecatedParameter(param));
+  }
 };
 /**
  * Show relevant warnings for given params
@@ -1753,21 +2272,15 @@ const isDeprecatedParameter = paramName => {
  */
 
 
-exports.isDeprecatedParameter = isDeprecatedParameter;
-
 const showWarningsForParams = params => {
   for (const param in params) {
-    if (!isValidParameter(param)) {
-      (0, _utils.warn)(`Unknown parameter "${param}"`);
+    checkIfParamIsValid(param);
+
+    if (params.toast) {
+      checkIfToastParamIsValid(param);
     }
 
-    if (params.toast && toastIncompatibleParams.includes(param)) {
-      (0, _utils.warn)(`The parameter "${param}" is incompatible with toasts`);
-    }
-
-    if (isDeprecatedParameter(param)) {
-      (0, _utils.warnOnce)(`The parameter "${param}" is deprecated and will be removed in the next major release.`);
-    }
+    checkIfParamIsDeprecated();
   }
 };
 
@@ -1896,30 +2409,7 @@ Object.keys(_timer).forEach(function (key) {
 });
 
 var _params = require("./utils/params.js");
-},{"./staticMethods/argsToParams.js":"node_modules/sweetalert2/src/staticMethods/argsToParams.js","./staticMethods/dom.js":"node_modules/sweetalert2/src/staticMethods/dom.js","./staticMethods/fire.js":"node_modules/sweetalert2/src/staticMethods/fire.js","./staticMethods/mixin.js":"node_modules/sweetalert2/src/staticMethods/mixin.js","./staticMethods/queue.js":"node_modules/sweetalert2/src/staticMethods/queue.js","./staticMethods/showLoading.js":"node_modules/sweetalert2/src/staticMethods/showLoading.js","./staticMethods/timer.js":"node_modules/sweetalert2/src/staticMethods/timer.js","./utils/params.js":"node_modules/sweetalert2/src/utils/params.js"}],"node_modules/sweetalert2/src/privateProps.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-/**
- * This module containts `WeakMap`s for each effectively-"private  property" that a `Swal` has.
- * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
- * This is the approach that Babel will probably take to implement private methods/fields
- *   https://github.com/tc39/proposal-private-methods
- *   https://github.com/babel/babel/pull/7555
- * Once we have the changes from that PR in Babel, and our core class fits reasonable in *one module*
- *   then we can use that language feature.
- */
-var _default = {
-  promise: new WeakMap(),
-  innerParams: new WeakMap(),
-  domCache: new WeakMap()
-};
-exports.default = _default;
-},{}],"node_modules/sweetalert2/src/instanceMethods/hideLoading.js":[function(require,module,exports) {
+},{"./staticMethods/argsToParams.js":"node_modules/sweetalert2/src/staticMethods/argsToParams.js","./staticMethods/dom.js":"node_modules/sweetalert2/src/staticMethods/dom.js","./staticMethods/fire.js":"node_modules/sweetalert2/src/staticMethods/fire.js","./staticMethods/mixin.js":"node_modules/sweetalert2/src/staticMethods/mixin.js","./staticMethods/queue.js":"node_modules/sweetalert2/src/staticMethods/queue.js","./staticMethods/showLoading.js":"node_modules/sweetalert2/src/staticMethods/showLoading.js","./staticMethods/timer.js":"node_modules/sweetalert2/src/staticMethods/timer.js","./utils/params.js":"node_modules/sweetalert2/src/utils/params.js"}],"node_modules/sweetalert2/src/instanceMethods/hideLoading.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1969,8 +2459,6 @@ exports.getInput = getInput;
 
 var dom = _interopRequireWildcard(require("../utils/dom/index.js"));
 
-var _classes = require("../utils/classes.js");
-
 var _privateProps = _interopRequireDefault(require("../privateProps.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -1978,37 +2466,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 // Get input element by specified type or, if type isn't specified, by params.input
-function getInput(inputType) {
-  const innerParams = _privateProps.default.innerParams.get(this);
+function getInput(instance) {
+  const innerParams = _privateProps.default.innerParams.get(instance || this);
 
-  const domCache = _privateProps.default.domCache.get(this);
+  const domCache = _privateProps.default.domCache.get(instance || this);
 
-  inputType = inputType || innerParams.input;
-
-  if (!inputType) {
-    return null;
-  }
-
-  switch (inputType) {
-    case 'select':
-    case 'textarea':
-    case 'file':
-      return dom.getChildByClass(domCache.content, _classes.swalClasses[inputType]);
-
-    case 'checkbox':
-      return domCache.popup.querySelector(`.${_classes.swalClasses.checkbox} input`);
-
-    case 'radio':
-      return domCache.popup.querySelector(`.${_classes.swalClasses.radio} input:checked`) || domCache.popup.querySelector(`.${_classes.swalClasses.radio} input:first-child`);
-
-    case 'range':
-      return domCache.popup.querySelector(`.${_classes.swalClasses.range} input`);
-
-    default:
-      return dom.getChildByClass(domCache.content, _classes.swalClasses.input);
-  }
+  return dom.getInput(domCache.content, innerParams.input);
 }
-},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../utils/classes.js":"node_modules/sweetalert2/src/utils/classes.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/utils/scrollbarFix.js":[function(require,module,exports) {
+},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/utils/scrollbarFix.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2038,7 +2503,7 @@ exports.fixScrollbar = fixScrollbar;
 
 const undoScrollbar = () => {
   if (dom.states.previousBodyPadding !== null) {
-    document.body.style.paddingRight = dom.states.previousBodyPadding;
+    document.body.style.paddingRight = dom.states.previousBodyPadding + 'px';
     dom.states.previousBodyPadding = null;
   }
 };
@@ -2235,6 +2700,41 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 /*
  * Instance method to close sweetAlert
  */
+function removePopupAndResetState(container, onAfterClose) {
+  if (!dom.isToast()) {
+    (0, _globalState.restoreActiveElement)().then(() => triggerOnAfterClose(onAfterClose));
+
+    _globalState.default.keydownTarget.removeEventListener('keydown', _globalState.default.keydownHandler, {
+      capture: _globalState.default.keydownListenerCapture
+    });
+
+    _globalState.default.keydownHandlerAdded = false;
+  } else {
+    triggerOnAfterClose(onAfterClose);
+  }
+
+  if (container.parentNode) {
+    container.parentNode.removeChild(container);
+  }
+
+  dom.removeClass([document.documentElement, document.body], [_classes.swalClasses.shown, _classes.swalClasses['height-auto'], _classes.swalClasses['no-backdrop'], _classes.swalClasses['toast-shown'], _classes.swalClasses['toast-column']]);
+
+  if (dom.isModal()) {
+    (0, _scrollbarFix.undoScrollbar)();
+    (0, _iosFix.undoIOSfix)();
+    (0, _ieFix.undoIEfix)();
+    (0, _aria.unsetAriaHidden)();
+  }
+}
+
+function swalCloseEventFinished(popup, container, onAfterClose) {
+  popup.removeEventListener(dom.animationEndEvent, swalCloseEventFinished);
+
+  if (dom.hasClass(popup, _classes.swalClasses.hide)) {
+    removePopupAndResetState(container, onAfterClose);
+  }
+}
+
 function close(resolveValue) {
   const container = dom.getContainer();
   const popup = dom.getPopup();
@@ -2255,47 +2755,13 @@ function close(resolveValue) {
   }
 
   dom.removeClass(popup, _classes.swalClasses.show);
-  dom.addClass(popup, _classes.swalClasses.hide);
-
-  const removePopupAndResetState = () => {
-    if (!dom.isToast()) {
-      (0, _globalState.restoreActiveElement)().then(() => triggerOnAfterClose(onAfterClose));
-
-      _globalState.default.keydownTarget.removeEventListener('keydown', _globalState.default.keydownHandler, {
-        capture: _globalState.default.keydownListenerCapture
-      });
-
-      _globalState.default.keydownHandlerAdded = false;
-    } else {
-      triggerOnAfterClose(onAfterClose);
-    }
-
-    if (container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
-
-    dom.removeClass([document.documentElement, document.body], [_classes.swalClasses.shown, _classes.swalClasses['height-auto'], _classes.swalClasses['no-backdrop'], _classes.swalClasses['toast-shown'], _classes.swalClasses['toast-column']]);
-
-    if (dom.isModal()) {
-      (0, _scrollbarFix.undoScrollbar)();
-      (0, _iosFix.undoIOSfix)();
-      (0, _ieFix.undoIEfix)();
-      (0, _aria.unsetAriaHidden)();
-    }
-  }; // If animation is supported, animate
-
+  dom.addClass(popup, _classes.swalClasses.hide); // If animation is supported, animate
 
   if (dom.animationEndEvent && !dom.hasClass(popup, _classes.swalClasses.noanimation)) {
-    popup.addEventListener(dom.animationEndEvent, function swalCloseEventFinished() {
-      popup.removeEventListener(dom.animationEndEvent, swalCloseEventFinished);
-
-      if (dom.hasClass(popup, _classes.swalClasses.hide)) {
-        removePopupAndResetState();
-      }
-    });
+    popup.addEventListener(dom.animationEndEvent, swalCloseEventFinished.bind(null, popup, container, onAfterClose));
   } else {
     // Otherwise, remove immediately
-    removePopupAndResetState();
+    removePopupAndResetState(container, onAfterClose);
   } // Resolve Swal promise
 
 
@@ -2324,37 +2790,19 @@ exports.disableInput = disableInput;
 
 var _privateProps = _interopRequireDefault(require("../privateProps.js"));
 
+var _utils = require("../utils/utils.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function enableButtons() {
-  const domCache = _privateProps.default.domCache.get(this);
+function setButtonsDisabled(instance, buttons, disabled) {
+  const domCache = _privateProps.default.domCache.get(instance);
 
-  domCache.confirmButton.disabled = false;
-  domCache.cancelButton.disabled = false;
+  buttons.forEach(button => {
+    domCache[button].disabled = disabled;
+  });
 }
 
-function disableButtons() {
-  const domCache = _privateProps.default.domCache.get(this);
-
-  domCache.confirmButton.disabled = true;
-  domCache.cancelButton.disabled = true;
-}
-
-function enableConfirmButton() {
-  const domCache = _privateProps.default.domCache.get(this);
-
-  domCache.confirmButton.disabled = false;
-}
-
-function disableConfirmButton() {
-  const domCache = _privateProps.default.domCache.get(this);
-
-  domCache.confirmButton.disabled = true;
-}
-
-function enableInput() {
-  const input = this.getInput();
-
+function setInputDisabled(input, disabled) {
   if (!input) {
     return false;
   }
@@ -2364,32 +2812,41 @@ function enableInput() {
     const radios = radiosContainer.querySelectorAll('input');
 
     for (let i = 0; i < radios.length; i++) {
-      radios[i].disabled = false;
+      radios[i].disabled = disabled;
     }
   } else {
-    input.disabled = false;
+    input.disabled = disabled;
   }
+}
+
+function enableButtons() {
+  setButtonsDisabled(this, ['confirmButton', 'cancelButton'], false);
+}
+
+function disableButtons() {
+  setButtonsDisabled(this, ['confirmButton', 'cancelButton'], true);
+} // @deprecated
+
+
+function enableConfirmButton() {
+  (0, _utils.warnAboutDepreation)('Swal.disableConfirmButton()', `Swal.getConfirmButton().removeAttribute('disabled')`);
+  setButtonsDisabled(this, ['confirmButton'], false);
+} // @deprecated
+
+
+function disableConfirmButton() {
+  (0, _utils.warnAboutDepreation)('Swal.enableConfirmButton()', `Swal.getConfirmButton().setAttribute('disabled', '')`);
+  setButtonsDisabled(this, ['confirmButton'], true);
+}
+
+function enableInput() {
+  return setInputDisabled(this.getInput(), false);
 }
 
 function disableInput() {
-  const input = this.getInput();
-
-  if (!input) {
-    return false;
-  }
-
-  if (input && input.type === 'radio') {
-    const radiosContainer = input.parentNode.parentNode;
-    const radios = radiosContainer.querySelectorAll('input');
-
-    for (let i = 0; i < radios.length; i++) {
-      radios[i].disabled = true;
-    }
-  } else {
-    input.disabled = true;
-  }
+  return setInputDisabled(this.getInput(), true);
 }
-},{"../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/instanceMethods/show-reset-validation-error.js":[function(require,module,exports) {
+},{"../privateProps.js":"node_modules/sweetalert2/src/privateProps.js","../utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js"}],"node_modules/sweetalert2/src/instanceMethods/show-reset-validation-error.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2456,28 +2913,35 @@ exports.hideProgressSteps = hideProgressSteps;
 
 var dom = _interopRequireWildcard(require("../utils/dom/index.js"));
 
+var _renderProgressSteps = require("../utils/dom/renderers/renderProgressSteps.js");
+
 var _privateProps = _interopRequireDefault(require("../privateProps.js"));
+
+var _utils = require("../utils/utils.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 function getProgressSteps() {
+  (0, _utils.warnAboutDepreation)('Swal.getProgressSteps()', `const swalInstance = Swal.fire({progressSteps: ['1', '2', '3']}); const progressSteps = swalInstance.params.progressSteps`);
+
   const innerParams = _privateProps.default.innerParams.get(this);
 
   return innerParams.progressSteps;
 }
 
 function setProgressSteps(progressSteps) {
+  (0, _utils.warnAboutDepreation)('Swal.setProgressSteps()', 'Swal.update()');
+
   const innerParams = _privateProps.default.innerParams.get(this);
 
   const updatedParams = Object.assign({}, innerParams, {
     progressSteps
   });
+  (0, _renderProgressSteps.renderProgressSteps)(this, updatedParams);
 
   _privateProps.default.innerParams.set(this, updatedParams);
-
-  dom.renderProgressSteps(updatedParams);
 }
 
 function showProgressSteps() {
@@ -2491,7 +2955,7 @@ function hideProgressSteps() {
 
   dom.hide(domCache.progressSteps);
 }
-},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/utils/Timer.js":[function(require,module,exports) {
+},{"../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../utils/dom/renderers/renderProgressSteps.js":"node_modules/sweetalert2/src/utils/dom/renderers/renderProgressSteps.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js","../utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js"}],"node_modules/sweetalert2/src/utils/Timer.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2501,61 +2965,59 @@ exports.default = void 0;
 
 class Timer {
   constructor(callback, delay) {
-    let id,
-        started,
-        remaining = delay;
+    this.callback = callback;
+    this.remaining = delay;
     this.running = false;
-
-    this.start = function () {
-      if (!this.running) {
-        this.running = true;
-        started = new Date();
-        id = setTimeout(callback, remaining);
-      }
-
-      return remaining;
-    };
-
-    this.stop = function () {
-      if (this.running) {
-        this.running = false;
-        clearTimeout(id);
-        remaining -= new Date() - started;
-      }
-
-      return remaining;
-    };
-
-    this.increase = function (n) {
-      const running = this.running;
-
-      if (running) {
-        this.stop();
-      }
-
-      remaining += n;
-
-      if (running) {
-        this.start();
-      }
-
-      return remaining;
-    };
-
-    this.getTimerLeft = function () {
-      if (this.running) {
-        this.stop();
-        this.start();
-      }
-
-      return remaining;
-    };
-
-    this.isRunning = function () {
-      return this.running;
-    };
-
     this.start();
+  }
+
+  start() {
+    if (!this.running) {
+      this.running = true;
+      this.started = new Date();
+      this.id = setTimeout(this.callback, this.remaining);
+    }
+
+    return this.remaining;
+  }
+
+  stop() {
+    if (this.running) {
+      this.running = false;
+      clearTimeout(this.id);
+      this.remaining -= new Date() - this.started;
+    }
+
+    return this.remaining;
+  }
+
+  increase(n) {
+    const running = this.running;
+
+    if (running) {
+      this.stop();
+    }
+
+    this.remaining += n;
+
+    if (running) {
+      this.start();
+    }
+
+    return this.remaining;
+  }
+
+  getTimerLeft() {
+    if (this.running) {
+      this.stop();
+      this.start();
+    }
+
+    return this.remaining;
+  }
+
+  isRunning() {
+    return this.running;
   }
 
 }
@@ -2586,8 +3048,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = setParameters;
 
-var _classes = require("./classes.js");
-
 var _utils = require("./utils.js");
 
 var dom = _interopRequireWildcard(require("./dom/index.js"));
@@ -2612,136 +3072,38 @@ function setParameters(params) {
         params.inputValidator = _defaultInputValidators.default[key];
       }
     });
-  } // Determine if the custom target element is valid
-
-
-  if (!params.target || typeof params.target === 'string' && !document.querySelector(params.target) || typeof params.target !== 'string' && !params.target.appendChild) {
-    (0, _utils.warn)('Target parameter is not valid, defaulting to "body"');
-    params.target = 'body';
-  } // Animation
-
-
-  if (typeof params.animation === 'function') {
-    params.animation = params.animation.call();
-  }
-
-  let popup;
-  const oldPopup = dom.getPopup();
-  let targetElement = typeof params.target === 'string' ? document.querySelector(params.target) : params.target; // If the model target has changed, refresh the popup
-
-  if (oldPopup && targetElement && oldPopup.parentNode !== targetElement.parentNode) {
-    popup = dom.init(params);
-  } else {
-    popup = oldPopup || dom.init(params);
-  } // Set popup width
-
-
-  if (params.width) {
-    popup.style.width = typeof params.width === 'number' ? params.width + 'px' : params.width;
-  } // Set popup padding
-
-
-  if (params.padding) {
-    popup.style.padding = typeof params.padding === 'number' ? params.padding + 'px' : params.padding;
-  } // Set popup background
-
-
-  if (params.background) {
-    popup.style.background = params.background;
-  }
-
-  const popupBackgroundColor = window.getComputedStyle(popup).getPropertyValue('background-color');
-  const successIconParts = popup.querySelectorAll('[class^=swal2-success-circular-line], .swal2-success-fix');
-
-  for (let i = 0; i < successIconParts.length; i++) {
-    successIconParts[i].style.backgroundColor = popupBackgroundColor;
-  }
-
-  const container = dom.getContainer();
-  const closeButton = dom.getCloseButton();
-  const footer = dom.getFooter(); // Title
-
-  dom.renderTitle(params); // Content
-
-  dom.renderContent(params); // Backdrop
-
-  if (typeof params.backdrop === 'string') {
-    dom.getContainer().style.background = params.backdrop;
-  } else if (!params.backdrop) {
-    dom.addClass([document.documentElement, document.body], _classes.swalClasses['no-backdrop']);
-  }
-
-  if (!params.backdrop && params.allowOutsideClick) {
-    (0, _utils.warn)('"allowOutsideClick" parameter requires `backdrop` parameter to be set to `true`');
-  } // Position
-
-
-  if (params.position in _classes.swalClasses) {
-    dom.addClass(container, _classes.swalClasses[params.position]);
-  } else {
-    (0, _utils.warn)('The "position" parameter is not valid, defaulting to "center"');
-    dom.addClass(container, _classes.swalClasses.center);
-  } // Grow
-
-
-  if (params.grow && typeof params.grow === 'string') {
-    let growClass = 'grow-' + params.grow;
-
-    if (growClass in _classes.swalClasses) {
-      dom.addClass(container, _classes.swalClasses[growClass]);
-    }
-  } // Close button
-
-
-  if (params.showCloseButton) {
-    closeButton.setAttribute('aria-label', params.closeButtonAriaLabel);
-    dom.show(closeButton);
-  } else {
-    dom.hide(closeButton);
-  } // Default Class
-
-
-  popup.className = _classes.swalClasses.popup;
-
-  if (params.toast) {
-    dom.addClass([document.documentElement, document.body], _classes.swalClasses['toast-shown']);
-    dom.addClass(popup, _classes.swalClasses.toast);
-  } else {
-    dom.addClass(popup, _classes.swalClasses.modal);
-  } // Custom Class
-
-
-  if (params.customClass) {
-    dom.addClass(popup, params.customClass);
-  }
-
-  if (params.customContainerClass) {
-    dom.addClass(container, params.customContainerClass);
-  } // Progress steps
-
-
-  dom.renderProgressSteps(params); // Icon
-
-  dom.renderIcon(params); // Image
-
-  dom.renderImage(params); // Actions (buttons)
-
-  dom.renderActions(params); // Footer
-
-  dom.parseHtmlToContainer(params.footer, footer); // CSS animation
-
-  if (params.animation === true) {
-    dom.removeClass(popup, _classes.swalClasses.noanimation);
-  } else {
-    dom.addClass(popup, _classes.swalClasses.noanimation);
   } // showLoaderOnConfirm && preConfirm
 
 
   if (params.showLoaderOnConfirm && !params.preConfirm) {
     (0, _utils.warn)('showLoaderOnConfirm is set to true, but preConfirm is not defined.\n' + 'showLoaderOnConfirm should be used together with preConfirm, see usage example:\n' + 'https://sweetalert2.github.io/#ajax-request');
+  } // params.animation will be actually used in renderPopup.js
+  // but in case when params.animation is a function, we need to call that function
+  // before popup (re)initialization, so it'll be possible to check Swal.isVisible()
+  // inside the params.animation function
+
+
+  params.animation = (0, _utils.callIfFunction)(params.animation); // Determine if the custom target element is valid
+
+  if (!params.target || typeof params.target === 'string' && !document.querySelector(params.target) || typeof params.target !== 'string' && !params.target.appendChild) {
+    (0, _utils.warn)('Target parameter is not valid, defaulting to "body"');
+    params.target = 'body';
+  } // Replace newlines with <br> in title
+
+
+  if (typeof params.title === 'string') {
+    params.title = params.title.split('\n').join('<br />');
+  }
+
+  const oldPopup = dom.getPopup();
+  let targetElement = typeof params.target === 'string' ? document.querySelector(params.target) : params.target;
+
+  if (!oldPopup || // If the model target has changed, refresh the popup
+  oldPopup && targetElement && oldPopup.parentNode !== targetElement.parentNode) {
+    dom.init(params);
   }
 }
-},{"./classes.js":"node_modules/sweetalert2/src/utils/classes.js","./utils.js":"node_modules/sweetalert2/src/utils/utils.js","./dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./defaultInputValidators.js":"node_modules/sweetalert2/src/utils/defaultInputValidators.js"}],"node_modules/sweetalert2/src/utils/openPopup.js":[function(require,module,exports) {
+},{"./utils.js":"node_modules/sweetalert2/src/utils/utils.js","./dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./defaultInputValidators.js":"node_modules/sweetalert2/src/utils/defaultInputValidators.js"}],"node_modules/sweetalert2/src/utils/openPopup.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2767,11 +3129,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
+function swalOpenAnimationFinished(popup, container) {
+  popup.removeEventListener(dom.animationEndEvent, swalOpenAnimationFinished);
+  container.style.overflowY = 'auto';
+}
 /**
  * Open popup, add necessary classes and styles, fix scrollbar
  *
  * @param {Array} params
  */
+
+
 const openPopup = params => {
   const container = dom.getContainer();
   const popup = dom.getPopup();
@@ -2783,20 +3151,13 @@ const openPopup = params => {
   if (params.animation) {
     dom.addClass(popup, _classes.swalClasses.show);
     dom.addClass(container, _classes.swalClasses.fade);
-    dom.removeClass(popup, _classes.swalClasses.hide);
-  } else {
-    dom.removeClass(popup, _classes.swalClasses.fade);
   }
 
   dom.show(popup); // scrolling is 'hidden' until animation is done, after that 'auto'
 
-  container.style.overflowY = 'hidden';
-
   if (dom.animationEndEvent && !dom.hasClass(popup, _classes.swalClasses.noanimation)) {
-    popup.addEventListener(dom.animationEndEvent, function swalCloseEventFinished() {
-      popup.removeEventListener(dom.animationEndEvent, swalCloseEventFinished);
-      container.style.overflowY = 'auto';
-    });
+    container.style.overflowY = 'hidden';
+    popup.addEventListener(dom.animationEndEvent, swalOpenAnimationFinished.bind(null, popup, container));
   } else {
     container.style.overflowY = 'auto';
   }
@@ -2808,7 +3169,10 @@ const openPopup = params => {
   }
 
   if (dom.isModal()) {
-    (0, _scrollbarFix.fixScrollbar)();
+    if (params.scrollbarPadding) {
+      (0, _scrollbarFix.fixScrollbar)();
+    }
+
     (0, _iosFix.iOSfix)();
     (0, _ieFix.IEfix)();
     (0, _aria.setAriaHidden)(); // sweetalert2/issues/1247
@@ -2830,7 +3194,133 @@ const openPopup = params => {
 };
 
 exports.openPopup = openPopup;
-},{"./dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./classes.js":"node_modules/sweetalert2/src/utils/classes.js","./scrollbarFix.js":"node_modules/sweetalert2/src/utils/scrollbarFix.js","./iosFix.js":"node_modules/sweetalert2/src/utils/iosFix.js","./ieFix.js":"node_modules/sweetalert2/src/utils/ieFix.js","./aria.js":"node_modules/sweetalert2/src/utils/aria.js","../globalState.js":"node_modules/sweetalert2/src/globalState.js"}],"node_modules/sweetalert2/src/instanceMethods/_main.js":[function(require,module,exports) {
+},{"./dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","./classes.js":"node_modules/sweetalert2/src/utils/classes.js","./scrollbarFix.js":"node_modules/sweetalert2/src/utils/scrollbarFix.js","./iosFix.js":"node_modules/sweetalert2/src/utils/iosFix.js","./ieFix.js":"node_modules/sweetalert2/src/utils/ieFix.js","./aria.js":"node_modules/sweetalert2/src/utils/aria.js","../globalState.js":"node_modules/sweetalert2/src/globalState.js"}],"node_modules/sweetalert2/src/utils/dom/inputUtils.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.handleInputValue = exports.handleInputOptions = void 0;
+
+var dom = _interopRequireWildcard(require("./index.js"));
+
+var _classes = require("../classes.js");
+
+var _domUtils = require("./domUtils.js");
+
+var _utils = require("../utils.js");
+
+var _showLoading = require("../../staticMethods/showLoading.js");
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+const handleInputOptions = (instance, params) => {
+  const content = dom.getContent();
+
+  const processInputOptions = inputOptions => populateInputOptions[params.input](content, formatInputOptions(inputOptions), params);
+
+  if ((0, _utils.isPromise)(params.inputOptions)) {
+    (0, _showLoading.showLoading)();
+    params.inputOptions.then(inputOptions => {
+      instance.hideLoading();
+      processInputOptions(inputOptions);
+    });
+  } else if (typeof params.inputOptions === 'object') {
+    processInputOptions(params.inputOptions);
+  } else {
+    (0, _utils.error)(`Unexpected type of inputOptions! Expected object, Map or Promise, got ${typeof params.inputOptions}`);
+  }
+};
+
+exports.handleInputOptions = handleInputOptions;
+
+const handleInputValue = (instance, params) => {
+  const input = instance.getInput();
+  dom.hide(input);
+  params.inputValue.then(inputValue => {
+    input.value = params.input === 'number' ? parseFloat(inputValue) || 0 : inputValue + '';
+    dom.show(input);
+    input.focus();
+    instance.hideLoading();
+  }).catch(err => {
+    (0, _utils.error)('Error in inputValue promise: ' + err);
+    input.value = '';
+    dom.show(input);
+    input.focus();
+    (void 0).hideLoading();
+  });
+};
+
+exports.handleInputValue = handleInputValue;
+const populateInputOptions = {
+  select: (content, inputOptions, params) => {
+    const select = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.select);
+    inputOptions.forEach(inputOption => {
+      const optionValue = inputOption[0];
+      const optionLabel = inputOption[1];
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.innerHTML = optionLabel;
+
+      if (params.inputValue.toString() === optionValue.toString()) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+    select.focus();
+  },
+  radio: (content, inputOptions, params) => {
+    const radio = (0, _domUtils.getChildByClass)(content, _classes.swalClasses.radio);
+    inputOptions.forEach(inputOption => {
+      const radioValue = inputOption[0];
+      const radioLabel = inputOption[1];
+      const radioInput = document.createElement('input');
+      const radioLabelElement = document.createElement('label');
+      radioInput.type = 'radio';
+      radioInput.name = _classes.swalClasses.radio;
+      radioInput.value = radioValue;
+
+      if (params.inputValue.toString() === radioValue.toString()) {
+        radioInput.checked = true;
+      }
+
+      const label = document.createElement('span');
+      label.innerHTML = radioLabel;
+      label.className = _classes.swalClasses.label;
+      radioLabelElement.appendChild(radioInput);
+      radioLabelElement.appendChild(label);
+      radio.appendChild(radioLabelElement);
+    });
+    const radios = radio.querySelectorAll('input');
+
+    if (radios.length) {
+      radios[0].focus();
+    }
+  }
+  /**
+   * Converts `inputOptions` into an array of `[value, label]`s
+   * @param inputOptions
+   */
+
+};
+
+const formatInputOptions = inputOptions => {
+  const result = [];
+
+  if (typeof Map !== 'undefined' && inputOptions instanceof Map) {
+    inputOptions.forEach((value, key) => {
+      result.push([key, value]);
+    });
+  } else {
+    Object.keys(inputOptions).forEach(key => {
+      result.push([key, inputOptions[key]]);
+    });
+  }
+
+  return result;
+};
+},{"./index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../classes.js":"node_modules/sweetalert2/src/utils/classes.js","./domUtils.js":"node_modules/sweetalert2/src/utils/dom/domUtils.js","../utils.js":"node_modules/sweetalert2/src/utils/utils.js","../../staticMethods/showLoading.js":"node_modules/sweetalert2/src/staticMethods/showLoading.js"}],"node_modules/sweetalert2/src/instanceMethods/_main.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2858,6 +3348,8 @@ var _privateProps = _interopRequireDefault(require("../privateProps.js"));
 
 var _privateMethods = _interopRequireDefault(require("../privateMethods.js"));
 
+var _inputUtils = require("../utils/dom/inputUtils.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
@@ -2866,10 +3358,7 @@ function _main(userParams) {
   (0, _params.showWarningsForParams)(userParams);
   const innerParams = Object.assign({}, _params.default, userParams);
   (0, _setParameters.default)(innerParams);
-  Object.freeze(innerParams);
-
-  _privateProps.default.innerParams.set(this, innerParams); // clear the previous timer
-
+  Object.freeze(innerParams); // clear the previous timer
 
   if (_globalState.default.timeout) {
     _globalState.default.timeout.stop();
@@ -2892,6 +3381,10 @@ function _main(userParams) {
   };
 
   _privateProps.default.domCache.set(this, domCache);
+
+  dom.render(this, innerParams);
+
+  _privateProps.default.innerParams.set(this, innerParams);
 
   const constructor = this.constructor;
   return new Promise(resolve => {
@@ -2964,7 +3457,7 @@ function _main(userParams) {
           if (dom.isVisible(domCache.validationMessage) || preConfirmValue === false) {
             this.hideLoading();
           } else {
-            succeedWith(preConfirmValue || value);
+            succeedWith(typeof preConfirmValue === 'undefined' ? value : preConfirmValue);
           }
         });
       } else {
@@ -2985,7 +3478,7 @@ function _main(userParams) {
       switch (e.type) {
         case 'click':
           // Clicked 'confirm'
-          if (targetedConfirm && constructor.isVisible()) {
+          if (targetedConfirm) {
             this.disableButtons();
 
             if (innerParams.input) {
@@ -3014,7 +3507,7 @@ function _main(userParams) {
               confirm(true);
             } // Clicked 'cancel'
 
-          } else if (targetedCancel && constructor.isVisible()) {
+          } else if (targetedCancel) {
             this.disableButtons();
             dismissWith(constructor.DismissReason.cancel);
           }
@@ -3200,235 +3693,13 @@ function _main(userParams) {
       dom.addClass(document.body, _classes.swalClasses['toast-column']);
     } else {
       dom.removeClass(document.body, _classes.swalClasses['toast-column']);
-    } // inputs
+    } // inputOptions, inputValue
 
-
-    const inputTypes = ['input', 'file', 'range', 'select', 'radio', 'checkbox', 'textarea'];
-
-    const setInputPlaceholder = input => {
-      if (!input.placeholder || innerParams.inputPlaceholder) {
-        input.placeholder = innerParams.inputPlaceholder;
-      }
-    };
-
-    let input;
-
-    for (let i = 0; i < inputTypes.length; i++) {
-      const inputClass = _classes.swalClasses[inputTypes[i]];
-      const inputContainer = dom.getChildByClass(domCache.content, inputClass);
-      input = this.getInput(inputTypes[i]); // set attributes
-
-      if (input) {
-        for (let j in input.attributes) {
-          if (input.attributes.hasOwnProperty(j)) {
-            const attrName = input.attributes[j].name;
-
-            if (attrName !== 'type' && attrName !== 'value') {
-              input.removeAttribute(attrName);
-            }
-          }
-        }
-
-        for (let attr in innerParams.inputAttributes) {
-          // Do not set a placeholder for <input type="range">
-          // it'll crash Edge, #1298
-          if (inputTypes[i] === 'range' && attr === 'placeholder') {
-            continue;
-          }
-
-          input.setAttribute(attr, innerParams.inputAttributes[attr]);
-        }
-      } // set class
-
-
-      inputContainer.className = inputClass;
-
-      if (innerParams.inputClass) {
-        dom.addClass(inputContainer, innerParams.inputClass);
-      }
-
-      dom.hide(inputContainer);
-    }
-
-    let populateInputOptions;
-
-    switch (innerParams.input) {
-      case 'text':
-      case 'email':
-      case 'password':
-      case 'number':
-      case 'tel':
-      case 'url':
-        {
-          input = dom.getChildByClass(domCache.content, _classes.swalClasses.input);
-
-          if (typeof innerParams.inputValue === 'string' || typeof innerParams.inputValue === 'number') {
-            input.value = innerParams.inputValue;
-          } else if (!(0, _utils.isPromise)(innerParams.inputValue)) {
-            (0, _utils.warn)(`Unexpected type of inputValue! Expected "string", "number" or "Promise", got "${typeof innerParams.inputValue}"`);
-          }
-
-          setInputPlaceholder(input);
-          input.type = innerParams.input;
-          dom.show(input);
-          break;
-        }
-
-      case 'file':
-        {
-          input = dom.getChildByClass(domCache.content, _classes.swalClasses.file);
-          setInputPlaceholder(input);
-          input.type = innerParams.input;
-          dom.show(input);
-          break;
-        }
-
-      case 'range':
-        {
-          const range = dom.getChildByClass(domCache.content, _classes.swalClasses.range);
-          const rangeInput = range.querySelector('input');
-          const rangeOutput = range.querySelector('output');
-          rangeInput.value = innerParams.inputValue;
-          rangeInput.type = innerParams.input;
-          rangeOutput.value = innerParams.inputValue;
-          dom.show(range);
-          break;
-        }
-
-      case 'select':
-        {
-          const select = dom.getChildByClass(domCache.content, _classes.swalClasses.select);
-          select.innerHTML = '';
-
-          if (innerParams.inputPlaceholder) {
-            const placeholder = document.createElement('option');
-            placeholder.innerHTML = innerParams.inputPlaceholder;
-            placeholder.value = '';
-            placeholder.disabled = true;
-            placeholder.selected = true;
-            select.appendChild(placeholder);
-          }
-
-          populateInputOptions = inputOptions => {
-            inputOptions.forEach(inputOption => {
-              const optionValue = inputOption[0];
-              const optionLabel = inputOption[1];
-              const option = document.createElement('option');
-              option.value = optionValue;
-              option.innerHTML = optionLabel;
-
-              if (innerParams.inputValue.toString() === optionValue.toString()) {
-                option.selected = true;
-              }
-
-              select.appendChild(option);
-            });
-            dom.show(select);
-            select.focus();
-          };
-
-          break;
-        }
-
-      case 'radio':
-        {
-          const radio = dom.getChildByClass(domCache.content, _classes.swalClasses.radio);
-          radio.innerHTML = '';
-
-          populateInputOptions = inputOptions => {
-            inputOptions.forEach(inputOption => {
-              const radioValue = inputOption[0];
-              const radioLabel = inputOption[1];
-              const radioInput = document.createElement('input');
-              const radioLabelElement = document.createElement('label');
-              radioInput.type = 'radio';
-              radioInput.name = _classes.swalClasses.radio;
-              radioInput.value = radioValue;
-
-              if (innerParams.inputValue.toString() === radioValue.toString()) {
-                radioInput.checked = true;
-              }
-
-              const label = document.createElement('span');
-              label.innerHTML = radioLabel;
-              label.className = _classes.swalClasses.label;
-              radioLabelElement.appendChild(radioInput);
-              radioLabelElement.appendChild(label);
-              radio.appendChild(radioLabelElement);
-            });
-            dom.show(radio);
-            const radios = radio.querySelectorAll('input');
-
-            if (radios.length) {
-              radios[0].focus();
-            }
-          };
-
-          break;
-        }
-
-      case 'checkbox':
-        {
-          const checkbox = dom.getChildByClass(domCache.content, _classes.swalClasses.checkbox);
-          const checkboxInput = this.getInput('checkbox');
-          checkboxInput.type = 'checkbox';
-          checkboxInput.value = 1;
-          checkboxInput.id = _classes.swalClasses.checkbox;
-          checkboxInput.checked = Boolean(innerParams.inputValue);
-          let label = checkbox.querySelector('span');
-          label.innerHTML = innerParams.inputPlaceholder;
-          dom.show(checkbox);
-          break;
-        }
-
-      case 'textarea':
-        {
-          const textarea = dom.getChildByClass(domCache.content, _classes.swalClasses.textarea);
-          textarea.value = innerParams.inputValue;
-          setInputPlaceholder(textarea);
-          dom.show(textarea);
-          break;
-        }
-
-      case null:
-        {
-          break;
-        }
-
-      default:
-        (0, _utils.error)(`Unexpected type of input! Expected "text", "email", "password", "number", "tel", "select", "radio", "checkbox", "textarea", "file" or "url", got "${innerParams.input}"`);
-        break;
-    }
 
     if (innerParams.input === 'select' || innerParams.input === 'radio') {
-      const processInputOptions = inputOptions => populateInputOptions((0, _utils.formatInputOptions)(inputOptions));
-
-      if ((0, _utils.isPromise)(innerParams.inputOptions)) {
-        constructor.showLoading();
-        innerParams.inputOptions.then(inputOptions => {
-          this.hideLoading();
-          processInputOptions(inputOptions);
-        });
-      } else if (typeof innerParams.inputOptions === 'object') {
-        processInputOptions(innerParams.inputOptions);
-      } else {
-        (0, _utils.error)(`Unexpected type of inputOptions! Expected object, Map or Promise, got ${typeof innerParams.inputOptions}`);
-      }
+      (0, _inputUtils.handleInputOptions)(this, innerParams);
     } else if (['text', 'email', 'number', 'tel', 'textarea'].includes(innerParams.input) && (0, _utils.isPromise)(innerParams.inputValue)) {
-      constructor.showLoading();
-      dom.hide(input);
-      innerParams.inputValue.then(inputValue => {
-        input.value = innerParams.input === 'number' ? parseFloat(inputValue) || 0 : inputValue + '';
-        dom.show(input);
-        input.focus();
-        this.hideLoading();
-      }).catch(err => {
-        (0, _utils.error)('Error in inputValue promise: ' + err);
-        input.value = '';
-        dom.show(input);
-        input.focus();
-        this.hideLoading();
-      });
+      (0, _inputUtils.handleInputValue)(this, innerParams);
     }
 
     (0, _openPopup.openPopup)(innerParams);
@@ -3451,7 +3722,7 @@ function _main(userParams) {
     domCache.container.scrollTop = 0;
   });
 }
-},{"../utils/params.js":"node_modules/sweetalert2/src/utils/params.js","../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../utils/classes.js":"node_modules/sweetalert2/src/utils/classes.js","../utils/Timer.js":"node_modules/sweetalert2/src/utils/Timer.js","../utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js","../utils/setParameters.js":"node_modules/sweetalert2/src/utils/setParameters.js","../globalState.js":"node_modules/sweetalert2/src/globalState.js","../utils/openPopup.js":"node_modules/sweetalert2/src/utils/openPopup.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js","../privateMethods.js":"node_modules/sweetalert2/src/privateMethods.js"}],"node_modules/sweetalert2/src/instanceMethods/update.js":[function(require,module,exports) {
+},{"../utils/params.js":"node_modules/sweetalert2/src/utils/params.js","../utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../utils/classes.js":"node_modules/sweetalert2/src/utils/classes.js","../utils/Timer.js":"node_modules/sweetalert2/src/utils/Timer.js","../utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js","../utils/setParameters.js":"node_modules/sweetalert2/src/utils/setParameters.js","../globalState.js":"node_modules/sweetalert2/src/globalState.js","../utils/openPopup.js":"node_modules/sweetalert2/src/utils/openPopup.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js","../privateMethods.js":"node_modules/sweetalert2/src/privateMethods.js","../utils/dom/inputUtils.js":"node_modules/sweetalert2/src/utils/dom/inputUtils.js"}],"node_modules/sweetalert2/src/instanceMethods/update.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3472,7 +3743,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
 /**
- * Updates popup options.
+ * Updates popup parameters.
  */
 function update(params) {
   const validUpdatableParams = {}; // assign valid params from `params` to `defaults`
@@ -3481,27 +3752,24 @@ function update(params) {
     if (_sweetalert.default.isUpdatableParameter(param)) {
       validUpdatableParams[param] = params[param];
     } else {
-      (0, _utils.warn)(`Invalid parameter to update: "${param}". Updatable params are listed here: TODO (@limonte) add link`);
+      (0, _utils.warn)(`Invalid parameter to update: "${param}". Updatable params are listed here: https://github.com/sweetalert2/sweetalert2/blob/master/src/utils/params.js`);
     }
   });
 
   const innerParams = _privateProps.default.innerParams.get(this);
 
-  const updatedParams = Object.assign({}, innerParams, validUpdatableParams); // Actions
-
-  dom.renderActions(updatedParams); // Content
-
-  dom.renderContent(updatedParams); // Icon
-
-  dom.renderIcon(updatedParams); // Image
-
-  dom.renderImage(updatedParams); // Progress steps
-
-  dom.renderProgressSteps(updatedParams); // Title
-
-  dom.renderTitle(updatedParams);
+  const updatedParams = Object.assign({}, innerParams, validUpdatableParams);
+  dom.render(this, updatedParams);
 
   _privateProps.default.innerParams.set(this, updatedParams);
+
+  Object.defineProperties(this, {
+    params: {
+      value: Object.assign({}, this.params, params),
+      writable: false,
+      enumerable: true
+    }
+  });
 }
 },{"../../src/utils/dom/index.js":"node_modules/sweetalert2/src/utils/dom/index.js","../../src/utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js","../sweetalert2.js":"node_modules/sweetalert2/src/sweetalert2.js","../privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/instanceMethods.js":[function(require,module,exports) {
 "use strict";
@@ -3650,7 +3918,8 @@ function SweetAlert(...args) {
     params: {
       value: outerParams,
       writable: false,
-      enumerable: true
+      enumerable: true,
+      configurable: true
     }
   });
 
@@ -3685,7 +3954,7 @@ Object.keys(instanceMethods).forEach(key => {
   };
 });
 SweetAlert.DismissReason = _DismissReason.DismissReason;
-SweetAlert.version = '8.0.5';
+SweetAlert.version = '8.9.0';
 var _default = SweetAlert;
 exports.default = _default;
 },{"./utils/utils.js":"node_modules/sweetalert2/src/utils/utils.js","./utils/DismissReason.js":"node_modules/sweetalert2/src/utils/DismissReason.js","./staticMethods.js":"node_modules/sweetalert2/src/staticMethods.js","./instanceMethods.js":"node_modules/sweetalert2/src/instanceMethods.js","./privateProps.js":"node_modules/sweetalert2/src/privateProps.js"}],"node_modules/sweetalert2/src/sweetalert2.js":[function(require,module,exports) {
@@ -3720,7 +3989,7 @@ function getBundleURL() {
   try {
     throw new Error();
   } catch (err) {
-    var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
+    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
 
     if (matches) {
       return getBaseURL(matches[0]);
@@ -3731,7 +4000,7 @@ function getBundleURL() {
 }
 
 function getBaseURL(url) {
-  return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
+  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)\/[^/]+$/, '$1') + '/';
 }
 
 exports.getBundleURL = getBundleURLCached;
@@ -3811,26 +4080,46 @@ function Module(moduleName) {
 }
 
 module.bundle.Module = Module;
+var checkedAssets, assetsToAccept;
 var parent = module.bundle.parent;
 
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64675" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34695" + '/');
 
   ws.onmessage = function (event) {
+    checkedAssets = {};
+    assetsToAccept = [];
     var data = JSON.parse(event.data);
 
     if (data.type === 'update') {
-      console.clear();
-      data.assets.forEach(function (asset) {
-        hmrApply(global.parcelRequire, asset);
-      });
+      var handled = false;
       data.assets.forEach(function (asset) {
         if (!asset.isNew) {
-          hmrAccept(global.parcelRequire, asset.id);
+          var didAccept = hmrAcceptCheck(global.parcelRequire, asset.id);
+
+          if (didAccept) {
+            handled = true;
+          }
         }
+      }); // Enable HMR for CSS by default.
+
+      handled = handled || data.assets.every(function (asset) {
+        return asset.type === 'css' && asset.generated.js;
       });
+
+      if (handled) {
+        console.clear();
+        data.assets.forEach(function (asset) {
+          hmrApply(global.parcelRequire, asset);
+        });
+        assetsToAccept.forEach(function (v) {
+          hmrAcceptRun(v[0], v[1]);
+        });
+      } else {
+        window.location.reload();
+      }
     }
 
     if (data.type === 'reload') {
@@ -3918,7 +4207,7 @@ function hmrApply(bundle, asset) {
   }
 }
 
-function hmrAccept(bundle, id) {
+function hmrAcceptCheck(bundle, id) {
   var modules = bundle.modules;
 
   if (!modules) {
@@ -3926,9 +4215,27 @@ function hmrAccept(bundle, id) {
   }
 
   if (!modules[id] && bundle.parent) {
-    return hmrAccept(bundle.parent, id);
+    return hmrAcceptCheck(bundle.parent, id);
   }
 
+  if (checkedAssets[id]) {
+    return;
+  }
+
+  checkedAssets[id] = true;
+  var cached = bundle.cache[id];
+  assetsToAccept.push([bundle, id]);
+
+  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+    return true;
+  }
+
+  return getParents(global.parcelRequire, id).some(function (id) {
+    return hmrAcceptCheck(global.parcelRequire, id);
+  });
+}
+
+function hmrAcceptRun(bundle, id) {
   var cached = bundle.cache[id];
   bundle.hotData = {};
 
@@ -3953,10 +4260,5 @@ function hmrAccept(bundle, id) {
 
     return true;
   }
-
-  return getParents(global.parcelRequire, id).some(function (id) {
-    return hmrAccept(global.parcelRequire, id);
-  });
 }
 },{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.js"], null)
-//# sourceMappingURL=/app.map
