@@ -4,8 +4,8 @@
   "description": "Demo of using SweetAlert2 with parcel application bundler",
   "license": "MIT",
   "dependencies": {
-    "@sweetalert2/themes": "^1.0.2",
-    "sweetalert2": "^8.0.3"
+    "@sweetalert2/themes": "^3.0.0",
+    "sweetalert2": "^9.0.0"
   },
   "devDependencies": {
     "node-sass": "^4.7.2",
