@@ -7,11 +7,11 @@
 ### app.js
 
 ```js
-import swal from 'sweetalert2/dist/sweetalert2.js'
+import Swal from 'sweetalert2/dist/sweetalert2.js'
 
 import './styles.scss'
 
-swal('Hello from parcel!')
+Swal.fire('Hello from parcel!')
 ```
 
 ### styles.scss
@@ -22,7 +22,7 @@ $swal2-font-size: 1.2rem;
 // default SweetAlert2 styles
 // @import '~sweetalert2/src/sweetalert2.scss';
 
-// Dark theme
+// Dark theme https://github.com/sweetalert2/sweetalert2-themes
 @import '~@sweetalert2/themes/dark/dark.scss';
 ```
 
