@@ -9,10 +9,11 @@
   },
   "devDependencies": {
     "node-sass": "^4.7.2",
-    "parcel-bundler": "^1.9.4"
+    "parcel-bundler": "^1.9.4",
+    "typescript": "^3.7.3"
   },
   "scripts": {
-    "start": "parcel watch --no-source-maps app.js",
-    "build": "parcel build --no-source-maps app.js"
+    "start": "parcel watch --no-source-maps app.ts",
+    "build": "parcel build --no-source-maps app.ts"
   }
 }
