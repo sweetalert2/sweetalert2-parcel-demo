@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/927ca2ab-bbf2-464e-a0b0-c7d0f4bf1015/deploy-status)](https://app.netlify.com/sites/sweetalert2-parcel-demo/deploys)
 
-## Live demo: https://sweetalert2-parcel-demo.netlify.com/
+## Live demo: https://sweetalert2-parcel-demo.netlify.app/
 
 ### app.js
 
