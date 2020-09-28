@@ -38,3 +38,7 @@ $swal2-font-size: 1.2rem;
 ```sh
 $ parcel build app.js
 ```
+
+### License
+
+This project uses the following license: [MIT](<https://choosealicense.com/licenses/mit/>)
