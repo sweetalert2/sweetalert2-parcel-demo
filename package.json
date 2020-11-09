@@ -5,7 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@sweetalert2/themes": "^4.0.0",
-    "sweetalert2": "^10.0.0"
+    "sweetalert2": "^10.9.1"
   },
   "devDependencies": {
     "node-sass": "^5.0.0",
