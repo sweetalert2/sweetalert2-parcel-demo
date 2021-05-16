@@ -4,12 +4,12 @@
   "description": "Demo of using SweetAlert2 with parcel application bundler",
   "license": "MIT",
   "dependencies": {
-    "@sweetalert2/themes": "^4.0.0",
-    "sweetalert2": "^10.0.0"
+    "@sweetalert2/themes": "^5.0.0",
+    "sweetalert2": "^11.0.0"
   },
   "devDependencies": {
-    "node-sass": "^5.0.0",
     "parcel-bundler": "^1.9.4",
+    "sass": "^1.0.0",
     "typescript": "^4.0.0"
   },
   "scripts": {
