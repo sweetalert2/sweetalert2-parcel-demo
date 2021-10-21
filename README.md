@@ -18,10 +18,10 @@ Swal.fire('Hello from parcel!')
 $swal2-font-size: 1.2rem;
 
 // default SweetAlert2 styles
-// @import 'node_modules/sweetalert2/src/sweetalert2.scss';
+// @import 'sweetalert2/src/sweetalert2.scss';
 
 // Dark theme https://github.com/sweetalert2/sweetalert2-themes
-@import 'node_modules/@sweetalert2/themes/dark/dark.scss';
+@import '@sweetalert2/themes/dark/dark.scss';
 ```
 
 ### index.html
