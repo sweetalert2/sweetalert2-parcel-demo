@@ -671,9 +671,9 @@
   integrity sha512-aWItSZvJj4+GI6FWkjZR13xPNPctq2RRakzo+O6vN7bC2yjwdg5EFpgaSAUn95b7BGSgcflvzVDPoKmJv24IOg==
 
 "@sweetalert2/themes@^5.0.0":
-  version "5.0.10"
-  resolved "https://registry.yarnpkg.com/@sweetalert2/themes/-/themes-5.0.10.tgz#6a011789e202cee12f18db5cf8f15e9c0971fe5f"
-  integrity sha512-j6clVozVR3T8s2Uert2oqEWRwla8iCh0WtwkCHlSysDp0v73uG0HftJ+drkQy93FDTwhT8piuMUjJIXqmxNHVg==
+  version "5.0.12"
+  resolved "https://registry.yarnpkg.com/@sweetalert2/themes/-/themes-5.0.12.tgz#d234d73f7aad92e98b78ffa3805750a03b4042c3"
+  integrity sha512-pdbIoSM9+PIyt4LRPNwr3awwnOTza4MnBFAtnWvPueQ6x1OmRH8oyeIUvJiCApfIe6dYaB0lUAqzb6Z2HeVJSQ==
 
 "@trysound/sax@0.2.0":
   version "0.2.0"
