@@ -1,7 +1,3 @@
-$swal2-font-size: 2rem;
-
-// default SweetAlert2 styles
-// @import 'sweetalert2/src/sweetalert2.scss';
-
-// Dark theme
-@import '@sweetalert2/themes/dark/dark.scss';
+@use 'sweetalert2/src/sweetalert2.scss' with (
+  $swal2-font-size: 2rem
+);

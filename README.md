@@ -15,13 +15,9 @@ Swal.fire('Hello from parcel!')
 ### styles.scss
 
 ```scss
-$swal2-font-size: 1.2rem;
-
-// default SweetAlert2 styles
-// @import 'sweetalert2/src/sweetalert2.scss';
-
-// Dark theme https://github.com/sweetalert2/sweetalert2-themes
-@import '@sweetalert2/themes/dark/dark.scss';
+@use 'sweetalert2/src/sweetalert2.scss' with (
+  $swal2-font-size: 2rem
+);
 ```
 
 ### index.html
