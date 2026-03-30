@@ -10,7 +10,7 @@
     "@parcel/transformer-sass": "^2.0.0",
     "parcel": "^2.0.0",
     "sass": "^1.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^6.0.2"
   },
   "scripts": {
     "dev": "parcel watch --no-source-maps app.ts",
